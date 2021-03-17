@@ -1,7 +1,7 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { HemisphereLight, Box3, Object3D, Vector3, PerspectiveCamera, PointLight, SphereGeometry, MeshStandardMaterial, InstancedMesh, Matrix4, AxesHelper, WebGLRenderer } from 'three'
+import { HemisphereLight, Box3, Color, Object3D, Vector3, PerspectiveCamera, PointLight, SphereGeometry, MeshStandardMaterial, InstancedMesh, Matrix4, AxesHelper, WebGLRenderer } from 'three'
 import seedrandom from 'seedrandom'
-// import CCapture from './ccapture.js/src/CCapture.js'
+import CCapture from './ccapture.js/src/CCapture.js'
 // import * as CCapture from '../../../node_modules/ccapture.js/build/CCapture.all.min.js'
 // import download from '../../../node_modules/ccapture.js/src/download'
 // const CCapture = require('../../../node_modules/ccapture.js/src/CCapture)
@@ -13,41 +13,10 @@ import seedrandom from 'seedrandom'
 // import 
 
 
-function randomize() {
-  //Randomize palette
-  for(iter = 0; iter < palette.length; iter++) {
-    val = palette[iter];
-      var num = parseInt(Number(val), 10);
-      num += Math.floor(16777215*rand()%16777215);
-      newVal = "0x"+num.toString(16);
-      console.log(newVal);
-      palette[iter] = newVal;
-  }
-
-  //Randomize if shiny or not
-  //0.8 to keep it kinda rare
-  if(rand() > 0.8) {
-    metaly = rand();
-    rough = rand();
-    emissivity = 0.1*rand();
-    intensityBoost = 1;
-  } else {
-    metaly = 0; 
-    rough = 1;
-    emissivity = 0;
-  }
-
-  random2 = rand() * ( random > 0.5 ? 1 : -1);
-  random3 = rand() * ( random2 > 0.5 ? 1 : -1);
-  random4 = rand() * ( random3 > 0.5 ? 1: -1);
-  rotationRate = (rand() > 0.75 ? 0.005 : 0);
-  rotationRate2 = (rand() > 0.75 & rotationRate > 0 ? 0.005 : 0);
-  rotationRate3 = (rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0 ? 0.005 : 0);
-}
-
 function init(app) {
 
     let camera, scene, renderer, mesh;
+    const palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
 
     const fr = 30;
     const limit = 20;
@@ -66,7 +35,7 @@ function init(app) {
     });
 
     //Could leverage rand2 to add pure randomness based on Date or the like
-    let rand = new seedrandom(window.context.owner);
+    let rand = new seedrandom('asdf');
     //let rand2 = rand;//new Math.seedrandom('Firestorrm');
     let random = rand();
     let b = random * 208186.01 / 1000000.01;
@@ -91,7 +60,7 @@ function init(app) {
     size = 0.25 + random;
     intensityBoost = 1;
 
-    const palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
+    
     randomize();
 
 
@@ -189,6 +158,39 @@ function init(app) {
     setupButtons();
     animate();
 
+}
+
+function randomize() {
+    //Randomize palette
+    for(let iter = 0; iter < palette.length; iter++) {
+        console.log(pallete)
+      val = palette[iter];
+        var num = parseInt(Number(val), 10);
+        num += Math.floor(16777215*rand()%16777215);
+        newVal = "0x"+num.toString(16);
+        console.log(newVal);
+        palette[iter] = newVal;
+    }
+  
+    //Randomize if shiny or not
+    //0.8 to keep it kinda rare
+    if(rand() > 0.8) {
+      metaly = rand();
+      rough = rand();
+      emissivity = 0.1*rand();
+      intensityBoost = 1;
+    } else {
+      metaly = 0; 
+      rough = 1;
+      emissivity = 0;
+    }
+  
+    random2 = rand() * ( random > 0.5 ? 1 : -1);
+    random3 = rand() * ( random2 > 0.5 ? 1 : -1);
+    random4 = rand() * ( random3 > 0.5 ? 1: -1);
+    rotationRate = (rand() > 0.75 ? 0.005 : 0);
+    rotationRate2 = (rand() > 0.75 & rotationRate > 0 ? 0.005 : 0);
+    rotationRate3 = (rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0 ? 0.005 : 0);
 }
 
 function fitCameraToSelection( camera, controls, posArray, fitOffset = 1.2 ) {
@@ -297,7 +299,7 @@ function startRecording(app) {
     resize(sizes,sizes);
     recorder.start();
     started = true;
-    // $start.style.display = 'none';
+    $start.style.display = 'none';
     recording = true;
     speedMult = OVER_POWER;
 }

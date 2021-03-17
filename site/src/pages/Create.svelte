@@ -3,11 +3,17 @@
   import defaultCode from '../conf/code.js';
   import Sandbox from '@beyondnft/sandbox';
   import { ipfs } from '../utils.js';
-  
+  // import { init } from "../components/captureWebM"
   import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-  import { HemisphereLight, Box3, Object3D, Vector3, PerspectiveCamera, PointLight, SphereGeometry, MeshStandardMaterial, InstancedMesh, Matrix4, AxesHelper, WebGLRenderer } from 'three'
-  import seedrandom from 'seedrandom'
-  // import createCanvasContext from 'canvas-context'
+import { HemisphereLight, LinearToneMapping, Box3, Scene, Color, Object3D, Vector3, PerspectiveCamera, PointLight, SphereGeometry, MeshStandardMaterial, InstancedMesh, Matrix4, AxesHelper, WebGLRenderer } from 'three'
+import seedrandom from 'seedrandom'
+import CCapture from '../components/ccapture.js/src/CCapture.js'
+// import * as CCapture from '../../../node_modules/ccap
+  
+  // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+  // import { HemisphereLight, Box3, Object3D, Vector3, PerspectiveCamera, PointLight, SphereGeometry, MeshStandardMaterial, InstancedMesh, Matrix4, AxesHelper, WebGLRenderer } from 'three'
+  // import seedrandom from 'seedrandom'
+  // // import createCanvasContext from 'canvas-context'
   // import createCanvasRecorder from 'canvas-recorder'
 
   
@@ -39,7 +45,7 @@
 
   // record();
   // const CCapture = require('../components/ccapture.js/src/CCapture')
-  import CCapture from '../components/ccapture.js/src/CCapture'
+  // import CCapture from '../components/ccapture.js/src/CCapture'
 // import * as CCapture from '../../../node_modules/ccapture.js/build/CCapture.all.min.js'
 // import download from '../../../node_modules/ccapture.js/src/download'
 // const CCapture = require('../../../node_modules/ccapture.js/src/CCapture)
@@ -49,14 +55,73 @@
 //Stabilization likely should *always* be on
 //TODO: Enable tweening of camera viewpoint
 // import 
+  // onMount(()=>init())
+  //Stabilization likely should *always* be on
+//TODO: Enable tweening of camera viewpoint
+let camera, scene, renderer, mesh;
+
+const fr = 30;
+const limit = 20;
+const actual = 5;
+let sizes = 350;
+const recorder = new CCapture({
+  verbose: false,
+  display: true,
+  
+  framerate: fr,
+  quality: 75,
+  format: 'webm',
+  timeLimit: limit,
+  frameLimit: 0,
+  autoSaveTime: 0
+});
+
+//Could leverage rand2 to add pure randomness based on Date or the like
+let rand = new seedrandom('asdf');
+//let rand2 = rand;//new seedrandom('Firestorrm');
+let random = rand();
+let b = random * 208186.01 / 1000000.01;
+
+const dummy = new Object3D();
+let visPos = [];
+let pos = [];
+let totalAve = new Vector3();
+let offsets = new Vector3();
+
+let recording = false;
+let frame = 0;
+let speedMult = 1;
+
+let STABILIZE = true;
+let CAMERA_LOCK = true;
+let OVER_POWER= 7;
+
+
+let size, intensityBoost, metaly, rough, emissivity, random2, random3, random4, rotationRate, rotationRate2, rotationRate3, controls;
+const color = new Color();
+size = 0.25 + random;
+intensityBoost = 1;
+
+const palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
+randomize();
+
+
+const amount = rand()*20+20;
+const count = Math.pow( amount, 3 );
+
+init();
+setupButtons();
+animate();
+
 
 function randomize() {
   //Randomize palette
-  for(iter = 0; iter < palette.length; iter++) {
-    val = palette[iter];
+  var val;
+  for(let iter = 0; iter < palette.length; iter++) {
+      val = palette[iter];
       var num = parseInt(Number(val), 10);
       num += Math.floor(16777215*rand()%16777215);
-      newVal = "0x"+num.toString(16);
+      var newVal = "0x"+num.toString(16);
       console.log(newVal);
       palette[iter] = newVal;
   }
@@ -82,216 +147,159 @@ function randomize() {
   rotationRate3 = (rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0 ? 0.005 : 0);
 }
 
-function init(app) {
+function init() {
 
-    let camera, scene, renderer, mesh;
+  camera = new PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+  camera.position.set( 77, 77, 77 );
+  camera.lookAt( 0, 0, 0 );
 
-    const fr = 30;
-    const limit = 20;
-    const actual = 5;
-    let sizes = 350;
-    const recorder = new CCapture({
-        verbose: false,
-        display: true,
+  scene = new Scene();
+  scene.background = new Color( 0x444444 );
+  initLights(scene);
 
-        framerate: fr,
-        quality: 75,
-        format: 'webm',
-        timeLimit: limit,
-        frameLimit: 0,
-        autoSaveTime: 0
-    });
-
-    //Could leverage rand2 to add pure randomness based on Date or the like
-    let rand = new seedrandom(window.context.owner);
-    //let rand2 = rand;//new Math.seedrandom('Firestorrm');
-    let random = rand();
-    let b = random * 208186.01 / 1000000.01;
-
-    const dummy = new Object3D();
-    let visPos = [];
-    let pos = [];
-    let totalAve = new Vector3();
-    let offsets = new Vector3();
-
-    let recording = false;
-    let frame = 0;
-    let speedMult = 1;
-
-    let STABILIZE = true;
-    let CAMERA_LOCK = true;
-    let OVER_POWER= 7;
+  //ILLUMINGATED CAMERA
+  const pointLight = new PointLight( 0xFBFAF5, intensityBoost, 300 );
+  camera.add( pointLight );
+  scene.add(camera);
 
 
-    let size, intensityBoost, metaly, rough, emissivity, random2, random3, random4, rotationRate, rotationRate2, rotationRate3, controls;
-    const color = new Color();
-    size = 0.25 + random;
-    intensityBoost = 1;
+  const geometry = new SphereGeometry( size, 5, 3 );
+  //const material = new MeshStandardMaterial();
 
-    const palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
-    randomize();
-
-
-    const amount = rand()*20+20;
-    const count = Math.pow( amount, 3 );
-
-    camera = new PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
-    camera.position.set( 77, 77, 77 );
-    camera.lookAt( 0, 0, 0 );
-
-    scene = new Scene();
-    scene.background = new Color( 0x444444 );
-    initLights(scene);
-
-    //ILLUMINGATED CAMERA
-    const pointLight = new PointLight( 0xFBFAF5, intensityBoost, 300 );
-    camera.add( pointLight );
-    scene.add(camera);
-
-
-    const geometry = new SphereGeometry( size, 5, 3 );
-    //const material = new MeshStandardMaterial();
-
-    /*
-    const material = new MeshPhongMaterial( { 
+/*
+  const material = new MeshPhongMaterial( { 
     color: 0xffffff,
     //envMap: envMap, // optional environment map
     specular: 0x25fae8,
     shininess: 10*(1-rough)
-    } ) */
+} ) */
 
 
-    const material = new MeshStandardMaterial( {
-        color: 0xffffff,
-        roughness: rough, //Shinyness
-        metalness: metaly,
-        emissiveIntensity: emissivity,
-        emissive: 0x25fae8
-    });
-    material.color = material.color.convertSRGBToLinear();
-    material.emissive = material.emissive.convertSRGBToLinear();
+  const material = new MeshStandardMaterial( {
+    color: 0xffffff,
+    roughness: rough, //Shinyness
+    metalness: metaly,
+    emissiveIntensity: emissivity,
+    emissive: 0x25fae8
+  });
+  material.color = material.color.convertSRGBToLinear();
+  material.emissive = material.emissive.convertSRGBToLinear();
 
-    mesh = new InstancedMesh( geometry, material, count );
+  mesh = new InstancedMesh( geometry, material, count );
 
-    let counter = 0;
-    const offset = ( amount - 1 ) / 2;
+  let counter = 0;
+  const offset = ( amount - 1 ) / 2;
 
-    const matrix = new Matrix4();
+  const matrix = new Matrix4();
 
-    for ( let x = 0; x < amount; x ++ ) {
+  for ( let x = 0; x < amount; x ++ ) {
 
-        for ( let y = 0; y < amount; y ++ ) {
+    for ( let y = 0; y < amount; y ++ ) {
 
-            for ( let z = 0; z < amount; z ++ ) {
+      for ( let z = 0; z < amount; z ++ ) {
 
-            matrix.setPosition( offset - x, offset - y, offset - z );
+        matrix.setPosition( offset - x, offset - y, offset - z );
 
-            index = getQuadrant(x,y,z,offset);
-            color.setHex(palette[index]).convertSRGBToLinear();
+        var index = getQuadrant(x,y,z,offset);
+        color.setHex(palette[index]).convertSRGBToLinear();
 
-            mesh.setMatrixAt( counter, matrix );
-            mesh.setColorAt( counter, color );
-            
-            var position = new Vector3( offset - x, offset - y, offset - z );
-            pos.push(position);
-            visPos.push(position.clone());
-            counter++;
+        mesh.setMatrixAt( counter, matrix );
+        mesh.setColorAt( counter, color );
+      
+        var position = new Vector3( offset - x, offset - y, offset - z );
+        pos.push(position);
+        visPos.push(position.clone());
+        counter++;
 
-            }
-
-        }
+      }
 
     }
 
+  }
 
-    scene.add( mesh );
 
-    //Axis reference location
-    const axesHelper = new AxesHelper( 50);
-    scene.add( axesHelper );
+  scene.add( mesh );
 
-    renderer = new WebGLRenderer( { antialias: true } );
-    renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.toneMapping = LinearToneMapping;
+  //Axis reference location
+  const axesHelper = new AxesHelper( 50);
+  scene.add( axesHelper );
 
-    document.body.appendChild( renderer.domElement );
+  renderer = new WebGLRenderer( { antialias: true } );
+  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  renderer.toneMapping = LinearToneMapping;
 
-    controls = new OrbitControls(camera, renderer.domElement);
-    window.addEventListener( 'resize', onWindowResize );
+  document.body.appendChild( renderer.domElement );
 
-    app.set({
-        recording: true
-    })
-    setupButtons();
-    animate();
+  controls = new OrbitControls(camera, renderer.domElement);
+  // window.addEventListener( 'resize', onWindowResize );
 
 }
 
 function fitCameraToSelection( camera, controls, posArray, fitOffset = 1.2 ) {
   
-    const box = new Box3().setFromPoints(posArray);
+  const box = new Box3().setFromPoints(posArray);
 
-    const size = box.getSize( new Vector3() );
-    const center = box.getCenter( new Vector3() );
-    const maxSize = Math.max( size.x, size.y, size.z ); //Find the maximum dimension of the box
-    const fitHeightDistance = maxSize / ( 2 * Math.atan( Math.PI * camera.fov / 360 ) ); //Fancy math
-    const fitWidthDistance = fitHeightDistance / camera.aspect; //More fancy math to find distance camera needs to be to see
-    const distance = fitOffset * Math.max( fitHeightDistance, fitWidthDistance ); //Take whichever of these distances is larger and use it with the offset
+  const size = box.getSize( new Vector3() );
+  const center = box.getCenter( new Vector3() );
+const maxSize = Math.max( size.x, size.y, size.z ); //Find the maximum dimension of the box
+  const fitHeightDistance = maxSize / ( 2 * Math.atan( Math.PI * camera.fov / 360 ) ); //Fancy math
+  const fitWidthDistance = fitHeightDistance / camera.aspect; //More fancy math to find distance camera needs to be to see
+  const distance = fitOffset * Math.max( fitHeightDistance, fitWidthDistance ); //Take whichever of these distances is larger and use it with the offset
 
-    const direction = controls.target.clone()
-    .sub( camera.position ) //Find camera position relative to target
-    .normalize() //Get unit normal vector for this value
-    .multiplyScalar(distance); //Convert that unit normal to distance camera needs to be from target to fit everything
+  const direction = controls.target.clone()
+  .sub( camera.position ) //Find camera position relative to target
+  .normalize() //Get unit normal vector for this value
+  .multiplyScalar(distance); //Convert that unit normal to distance camera needs to be from target to fit everything
 
-    controls.maxDistance = distance * 10; //
-    //controls.target.copy( center ); //This line being disabled reduces the "jerkiness of everything" – unecessary since we are already centered at zero
+  controls.maxDistance = distance * 10; //
+  //controls.target.copy( center ); //This line being disabled reduces the "jerkiness of everything" – unecessary since we are already centered at zero
 
-    camera.near = distance / 100;//100 is the max view distance(?)
-    camera.far = distance * 100;
-    camera.updateProjectionMatrix(); //Update the camera
+  camera.near = distance / 100;//100 is the max view distance(?)
+  camera.far = distance * 100;
+  camera.updateProjectionMatrix(); //Update the camera
 
-    camera.position.copy( controls.target ).sub(direction); //Set position of camera to our target, then subtract the direction we calculated previously
+  camera.position.copy( controls.target ).sub(direction); //Set position of camera to our target, then subtract the direction we calculated previously
 
-    controls.update();
+  controls.update();
   
 }
 
 
 function getQuadrant(x,y,z,offset) {
-    var xPositive = offset - x > 0;
-    var yPositive = offset - y > 0;
-    var zPositive = offset - z > 0;
-    if(xPositive) {
+  var xPositive = offset - x > 0;
+  var yPositive = offset - y > 0;
+  var zPositive = offset - z > 0;
+  if(xPositive) {
     if(yPositive) {
-        if(zPositive) {
+      if(zPositive) {
         return 0;
-        } else {
+      } else {
         return 1;
-        }
+      }
     } else {
-        if(zPositive) {
+      if(zPositive) {
         return 2;
-        } else {
+      } else {
         return 3;
-        }
+      }
     }
-    } else {
+  } else {
     if(yPositive) {
-        if(zPositive) {
+      if(zPositive) {
         return 4;
-        } else {
+      } else {
         return 5;
-        }
+      }
     } else {
-        if(zPositive) {
+      if(zPositive) {
         return 6;
-        } else {
+      } else {
         return 7;
-        }
+      }
     }
-    }
-    return -1;
+  }
+  return -1;
 }
 
 function initLights(scene) {
@@ -318,140 +326,142 @@ function initLights(scene) {
     */
 }
 
-function onWindowResize(app) {
-    if (recording) {
-        return;
-    }
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+function onWindowResize() {
+  if (recording) {
+    return;
+  }
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
+  renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
 
-// function setupButtons(){
-function startRecording(app) {
-    resize(sizes,sizes);
-    recorder.start();
-    started = true;
-    // $start.style.display = 'none';
-    recording = true;
-    speedMult = OVER_POWER;
+function setupButtons(){
+const $start = document.getElementById('start');
+  // $start.addEventListener('click', e => {
+  //   e.preventDefault();
+  //   resize(sizes,sizes);
+  //   recorder.start();
+  //   $start.style.display = 'none';
+  //   recording = true;
+  //   speedMult = OVER_POWER;
+  // }, false);
+
+  
+
 }
 
-// }
+function onRecordingEnd() {
+  console.log('asdf')
+  recording = false;
+  recorder.stop();
+  recorder.save( function( blob ) { console.log(blob) } );
+    //recorder.save( function( blob ) { /* ... */ 
+    //This is where stuff is done with the blob
+    //console.log(blob);
+  // } );
 
-function onRecordingEnd(app) {
-    console.log('asdf')
-    recording = false;
-    recorder.stop();
-    recorder.save( function( blob ) { console.log(blob) } );
-        //recorder.save( function( blob ) { /* ... */ 
-        //This is where stuff is done with the blob
-        //console.log(blob);
-    // } );
-
-    onWindowResize();
-    console.log("saved");
-    const $start = document.getElementById('start');
-    $start.style.display = 'inline';
-    speedMult = 1;
-    app.set({recording: false})
+  onWindowResize();
+  console.log("saved");
+  const $start = document.getElementById('start');
+  $start.style.display = 'inline';
+  speedMult = 1;
 }
 
 function resize(width, height){
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
 }
 
 
 function animate() {
-    render();
-    recorder.capture(renderer.domElement);
-    if(recording) {
-        frame++;
-        if(frame > fr*actual) {
-            onRecordingEnd();
-        }
+  render();
+  recorder.capture(renderer.domElement);
+  if(recording) {
+    frame++;
+    if(frame > fr*actual) {
+      onRecordingEnd();
     }
-    requestAnimationFrame( animate );
+  }
+  requestAnimationFrame( animate );
 }
 
 function render() {
-    const SCALING_FACTOR = 10;
+  const SCALING_FACTOR = 10;
 
-    if ( mesh ) {
+  if ( mesh ) {
     var reps = 0;
     while(reps < speedMult) { 
 
-        var len = pos.length;
-    if(STABILIZE) {
+      var len = pos.length;
+if(STABILIZE) {
         offsets.copy(totalAve).divideScalar(len).negate();
         //offsets = totalAve.clone().divideScalar(len).negate();
         totalAve.set(0,0,0);
-        }
+      }
 
-        mesh.rotation.x += rotationRate2*random3;
+      mesh.rotation.x += rotationRate2*random3;
         mesh.rotation.y += rotationRate*random2;
-            mesh.rotation.z += rotationRate3*random4;
-        //var b = 0.1313;
-        let i = 0;
+         mesh.rotation.z += rotationRate3*random4;
+      //var b = 0.1313;
+      let i = 0;
 
-        while(i < count) {  
+      while(i < count) {  
 
-        position = pos[i];
-        visPosition = visPos[i];
+        var position = pos[i];
+        var visPosition = visPos[i];
 
-            var dx = position.x/SCALING_FACTOR;
-            var dy = position.y/SCALING_FACTOR;
-            var dz = position.z/SCALING_FACTOR;
+          var dx = position.x/SCALING_FACTOR;
+          var dy = position.y/SCALING_FACTOR;
+          var dz = position.z/SCALING_FACTOR;
             
-            var x1 = (-b*dx+Math.sin(dy))*random;
-            var y1 = (-b*dy+Math.sin(dz))*random;
-            var z1 = (-b*dz+Math.sin(dx))*random;
+          var x1 = (-b*dx+Math.sin(dy))*random;
+          var y1 = (-b*dy+Math.sin(dz))*random;
+          var z1 = (-b*dz+Math.sin(dx))*random;
 
-            //var randCall = rand();
-            var xm = rand();
-            var ym = rand();//randCall*random3;
-            var zm = rand();//randCall*random4;
+          //var randCall = rand();
+          var xm = rand();
+          var ym = rand();//randCall*random3;
+          var zm = rand();//randCall*random4;
 
-            position.x += x1 + xm/5;
-            position.y += y1 + ym/5;
-            position.z += z1 + zm/5;  
+          position.x += x1 + xm/5;
+          position.y += y1 + ym/5;
+          position.z += z1 + zm/5;  
             
             visPosition.copy(position).add(offsets);
 
-            if(STABILIZE) {
-            dummy.position.set( visPosition.x,  visPosition.y, visPosition.z );
-            totalAve = totalAve.addVectors(totalAve, position);
-            } else {
-                dummy.position.set( position.x,  position.y, position.z );
+          if(STABILIZE) {
+          dummy.position.set( visPosition.x,  visPosition.y, visPosition.z );
+          totalAve = totalAve.addVectors(totalAve, position);
+          } else {
+               dummy.position.set( position.x,  position.y, position.z );
             }
-            
+          
         dummy.updateMatrix();
         mesh.setMatrixAt( i++, dummy.matrix );
 
-            /*
-            var mag = Math.sqrt(x1^2 + y1^2 + z1^2);
-            if(mag > max) {
+          /*
+          var mag = Math.sqrt(x1^2 + y1^2 + z1^2);
+          if(mag > max) {
             max = mag;
-            }*/
+          }*/
 
-            //Rainbow Mapping Color Palette
-            /* This does nothing
-            re =x1/mag*255;
-            gr =y1/mag*255;
-            bl =z1/mag*255;
-            if(re < 10 & gr < 10 & bl < 10) {
+          //Rainbow Mapping Color Palette
+          /* This does nothing
+          re =x1/mag*255;
+          gr =y1/mag*255;
+          bl =z1/mag*255;
+          if(re < 10 & gr < 10 & bl < 10) {
             re +=200;
             gr +=200;
             bl +=200;
-            }
-            color.setRGB(re, gr, bl)
+          }
+          color.setRGB(re, gr, bl)
         */
 
-            //Palette Mapping 
+          //Palette Mapping 
 
 
         
@@ -466,20 +476,20 @@ function render() {
         //mesh.instanceColor.needsUpdate = true;
         
 
-        }
-        reps++;
-        }
+      }
+      reps++;
+      }
     mesh.instanceMatrix.needsUpdate = true;
     mesh.instanceColor.needsUpdate = true;
 
+  }
+  if(CAMERA_LOCK) {
+    fitCameraToSelection(camera, controls, visPos, 1.3)
     }
-    if(CAMERA_LOCK) {
-        fitCameraToSelection(camera, controls, visPos, 1.3)
-    }
-    renderer.render( scene, camera );
-}
+  
+  renderer.render( scene, camera );
 
-export { startRecording, onRecordingEnd, init }
+}
 
   const app = getContext('app');
   const dispatch = createEventDispatcher();
@@ -759,7 +769,7 @@ export { startRecording, onRecordingEnd, init }
                   <a
                     href="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.min.js"
                     target="_blank">p5.js</a>
-                  or d3.js or Three.js or ...</em>
+                  or d3.js or js or ...</em>
               </p>
             {/each}
           </ul>
