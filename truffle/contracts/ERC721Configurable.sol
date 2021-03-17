@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 abstract contract ERC721Configurable is ERC721 {
     // map of tokenId => interactiveConfURI.
     mapping(uint256 => string) private _interactiveConfURIs;
-
+    
     function _setInteractiveConfURI(
         uint256 tokenId,
         string calldata _interactiveConfURI

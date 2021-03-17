@@ -1,20 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "./ERC721Configurable.sol";
 
 contract InteractiveNFT is Ownable, ERC721Configurable {
+
     constructor() public ERC721("InteractiveNFT", "INFT") {}
 
+    
     /**
      * Mint a token to _to
      */
+
+
     function mint(
         uint256 _tokenId,
         address _to,
         string calldata _tokenURI
-    ) public {
+    ) public onlyOwner {
         _safeMint(_to, _tokenId);
         _setTokenURI(_tokenId, _tokenURI);
     }
@@ -27,11 +31,12 @@ contract InteractiveNFT is Ownable, ERC721Configurable {
         address _to,
         string calldata _tokenURI,
         string calldata _interactiveConfURI
-    ) public {
+    ) public onlyOwner {
         _safeMint(_to, _tokenId);
         _setTokenURI(_tokenId, _tokenURI);
         _setInteractiveConfURI(_tokenId, _interactiveConfURI);
     }
+
 
     /**
         Function to let Owner set configurationURI
@@ -39,7 +44,7 @@ contract InteractiveNFT is Ownable, ERC721Configurable {
     function setInteractiveConfURI(
         uint256 _tokenId,
         string calldata _interactiveConfURI
-    ) public {
+    ) public onlyOwner {
         require(
             _isApprovedOrOwner(_msgSender(), _tokenId),
             "ERC721Configurable: Operator is not approved"
