@@ -6,8 +6,9 @@
 
   import List from './pages/List.svelte';
   import Create from './pages/Create.svelte';
+  
 
-  let mode = 'list';
+  let mode = 'create';
 
   const app = writable({});
   setContext('app', app);
