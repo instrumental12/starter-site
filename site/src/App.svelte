@@ -71,7 +71,7 @@
     {#if mode === 'list'}
       <List />
     {:else if mode === 'create'}
-      <Create on:minted={() => (mode = 'list')} innerHeight={$innerHeight} innerWidth={$innerWidth} />
+      <Create on:minted={() => (mode = 'list')} innerHeight={$innerHeight/2} innerWidth={$innerWidth/2} />
     {/if}
   {:else}Connecting to ethereum provider ...{/if}
 </main>

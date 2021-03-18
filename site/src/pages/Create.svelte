@@ -209,7 +209,7 @@ import { writable } from 'svelte/store';
   }
 let camera, scene, renderer, mesh;
 
-const fr = 30;
+const fr = 70;
 const limit = 20;
 const actual = 5;
 let sizes = 350;
@@ -226,7 +226,7 @@ const recorder = new CCapture({
 });
 
 //Could leverage rand2 to add pure randomness based on Date or the like
-let rand = new seedrandom('asdf');
+let rand = new seedrandom("Pegasus");
 //let rand2 = rand;//new seedrandom('Firestorrm');
 let random = rand();
 let b = random * 208186.01 / 1000000.01;
@@ -259,7 +259,15 @@ const amount = rand()*20+20;
 const count = Math.pow( amount, 3 );
 
 init();
-setupButtons();
+// setupButtons();
+export const startRecording = () => {
+// e.preventDefault();
+    resize(sizes,sizes);
+    recorder.start();
+    // $start.style.display = 'none';
+    recording = true;
+    speedMult = OVER_POWER;
+};
 animate();
 
 
@@ -476,6 +484,7 @@ function initLights(scene) {
 }
 
 export const onWindowResize = () => {
+  console.log('asdf')
   if (recording) {
     return;
   }
@@ -489,12 +498,7 @@ export const onWindowResize = () => {
 function setupButtons(){
 // const $start = document.getElementById('start');
 
-    // e.preventDefault();
-    resize(sizes,sizes);
-    recorder.start();
-    // $start.style.display = 'none';
-    recording = true;
-    speedMult = OVER_POWER;
+    
 
 
   
@@ -518,7 +522,7 @@ function onRecordingEnd() {
   speedMult = 1;
 }
 
-function resize(width, height){
+export const resize = (width, height) => {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
@@ -545,10 +549,10 @@ function render() {
     while(reps < speedMult) { 
 
       var len = pos.length;
-    if(STABILIZE) {
-        offsets.copy(totalAve).divideScalar(len).negate();
-        //offsets = totalAve.clone().divideScalar(len).negate();
-        totalAve.set(0,0,0);
+      if(STABILIZE) {
+          offsets.copy(totalAve).divideScalar(len).negate();
+          //offsets = totalAve.clone().divideScalar(len).negate();
+          totalAve.set(0,0,0);
       }
 
       mesh.rotation.x += rotationRate2*random3;
@@ -639,9 +643,9 @@ function render() {
   renderer.render( scene, camera );
 
 }
+</script>
 
   
-</script>
 
 <style>
   section {
@@ -712,7 +716,7 @@ function render() {
 
 
 
-
+<svelte:window on:resize={onWindowResize()}/>
 <section>
   
   <div class="form">
@@ -810,10 +814,11 @@ function render() {
   <div class="render">
     <h2>Preview</h2>
     <div bind:this={view} />
+      <div class="buttons">
+      <button id="start">Start recording to WebM</button>
+      <button id="stop">Stop (or wait 4 seconds)</button>
+    </div>
   </div>
-  <div class="buttons">
-    <button id="start">Start recording to WebM</button>
-    <button id="stop">Stop (or wait 4 seconds)</button>
-  </div>
+
   
 </section>
