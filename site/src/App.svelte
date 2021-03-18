@@ -11,6 +11,8 @@
   let mode = 'create';
 
   const app = writable({});
+  export const innerHeight = writable(1000)
+  export const innerWidth = writable(1000)
   setContext('app', app);
 
   initProvider(app);
@@ -62,12 +64,14 @@
     </ul>
   </nav>
 </header>
+<svelte:window bind:innerWidth={$innerWidth} bind:innerHeight={$innerHeight}/>
 <main>
+  
   {#if $app.contract}
     {#if mode === 'list'}
       <List />
     {:else if mode === 'create'}
-      <Create on:minted={() => (mode = 'list')} />
+      <Create on:minted={() => (mode = 'list')} innerHeight={$innerHeight} innerWidth={$innerWidth} />
     {/if}
   {:else}Connecting to ethereum provider ...{/if}
 </main>

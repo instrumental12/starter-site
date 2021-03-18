@@ -67,7 +67,7 @@ function init(app) {
     const amount = rand()*20+20;
     const count = Math.pow( amount, 3 );
 
-    camera = new PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    camera = new PerspectiveCamera( 60, $innerWidth / $innerHeight, 0.1, 1000 );
     camera.position.set( 77, 77, 77 );
     camera.lookAt( 0, 0, 0 );
 
@@ -144,7 +144,7 @@ function init(app) {
 
     renderer = new WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( $innerWidth, $innerHeight );
     renderer.toneMapping = LinearToneMapping;
 
     document.body.appendChild( renderer.domElement );
@@ -287,10 +287,10 @@ function onWindowResize(app) {
     if (recording) {
         return;
     }
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = $innerWidth / $innerHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( $innerWidth, $innerHeight );
 
 }
 
