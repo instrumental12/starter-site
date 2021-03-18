@@ -73,8 +73,8 @@ import { writable } from 'svelte/store';
   let data;
   let mintText;
 
-  let name = '';
-  let description = '';
+  let name = 'asdf';
+  let description = 'asdf';
   let attributes = {};
   let image = '';
   let dependencies = [];
@@ -88,7 +88,9 @@ import { writable } from 'svelte/store';
   let dependencyType = 'script';
 
   $: view && code && data && renderSandbox();
-
+  // $: {
+  //   init(); animate();
+  // }
   $: {
     let _data = {
       name,
@@ -169,47 +171,10 @@ import { writable } from 'svelte/store';
     attributes = attributes;
   }
 
-  async function mint() {
-    if (
-      !confirm(
-        `We are ready to send data to IPFS and then to the contract ${$app.contract.address}.\nAre you sure?`
-      )
-    ) {
-      return;
-    }
-
-    mintText = 'Uploading image to ipfs...';
-    await ipfs.connect('https://ipfs.infura.io:5001');
-
-    let file = await ipfs.add(image);
-    const image_uri = `https://gateway.ipfs.io/ipfs/${file.path}`;
-    data.image = image_uri;
-    console.log('IMAGE URL', image_uri);
-
-    mintText = 'Uploading code to ipfs...';
-    file = await ipfs.add(code);
-    const code_uri = `https://gateway.ipfs.io/ipfs/${file.path}`;
-    console.log('CODE URL', code_uri);
-    delete data.interactive_nft.code;
-    data.interactive_nft.code_uri = code_uri;
-
-    let nextId = await contract.methods.totalSupply().call();
-    // here is where you'd set external_url in the json
-
-    mintText = 'Uploading NFT metadata to ipfs...';
-    file = await ipfs.add(JSON.stringify(data));
-    const json_uri = `https://gateway.ipfs.io/ipfs/${file.path}`;
-
-    mintText =
-      'Adding NFT to blockchain - See MetaMask (or the like) for transaction';
-    console.log('JSON URL', json_uri);
-
-    await contract.methods.mint(nextId, account, json_uri).send();
-    dispatch('minted');
-  }
+  
 let camera, scene, renderer, mesh;
 
-const fr = 70;
+const fr = 30;
 const limit = 20;
 const actual = 5;
 let sizes = 350;
@@ -254,11 +219,14 @@ intensityBoost = 1;
 const palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
 randomize();
 
-
+function blobToFile(theBlob, fileName){
+    //A Blob() is almost a File() - it's just missing the two properties below which we will add
+    theBlob.lastModifiedDate = new Date();
+    theBlob.name = fileName;
+    return theBlob;
+}
 const amount = rand()*20+20;
 const count = Math.pow( amount, 3 );
-
-init();
 // setupButtons();
 export const startRecording = () => {
 // e.preventDefault();
@@ -268,7 +236,9 @@ export const startRecording = () => {
     recording = true;
     speedMult = OVER_POWER;
 };
-animate();
+// onMount(async ()=>{
+//   init();
+// })
 
 
 function randomize() {
@@ -304,7 +274,7 @@ function randomize() {
   rotationRate3 = (rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0 ? 0.005 : 0);
 }
 
-function init() {
+const init = () => {
 
   camera = new PerspectiveCamera( 60, innerWidth / innerHeight, 0.1, 1000 );
   camera.position.set( 77, 77, 77 );
@@ -385,13 +355,16 @@ function init() {
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( innerWidth, innerHeight );
   renderer.toneMapping = LinearToneMapping;
-
+  console.log(
+  document.getElementById('buttons')
+  )
   document.body.appendChild( renderer.domElement );
 
   controls = new OrbitControls(camera, renderer.domElement);
   // window.addEventListener( 'resize', onWindowResize );
 
 }
+
 
 function fitCameraToSelection( camera, controls, posArray, fitOffset = 1.2 ) {
   
@@ -504,12 +477,19 @@ function setupButtons(){
   
 
 }
-
+var webMfile = writable();
+var blob = new Blob();
 function onRecordingEnd() {
   console.log('asdf')
   recording = false;
   recorder.stop();
-  recorder.save( );
+  recorder.save((_blob) => blob = _blob);
+  const file = new File([blob], "BlobFile", {type: 'video/webm'})
+  const formData = new FormData();
+  formData.append('webM', blob)
+  console.log(formData.entries().next().value)
+  webMfile.update((f)=>formData.entries().next().value[1]);
+  
     //recorder.save( function( blob ) { /* ... */ 
     //This is where stuff is done with the blob
     //console.log(blob);
@@ -522,14 +502,13 @@ function onRecordingEnd() {
   speedMult = 1;
 }
 
-export const resize = (width, height) => {
+const resize = (width, height) => {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
 }
 
-
-function animate() {
+const animate = () => {
   render();
   recorder.capture(renderer.domElement);
   if(recording) {
@@ -540,7 +519,9 @@ function animate() {
   }
   requestAnimationFrame( animate );
 }
-
+init();
+animate();
+startRecording();
 function render() {
   const SCALING_FACTOR = 10;
 
@@ -583,7 +564,7 @@ function render() {
           position.y += y1 + ym/5;
           position.z += z1 + zm/5;  
             
-            visPosition.copy(position).add(offsets);
+          visPosition.copy(position).add(offsets);
 
           if(STABILIZE) {
           dummy.position.set( visPosition.x,  visPosition.y, visPosition.z );
@@ -643,6 +624,52 @@ function render() {
   renderer.render( scene, camera );
 
 }
+async function mint() {
+    if (
+      !confirm(
+        `We are ready to send data to IPFS and then to the contract ${$app.contract._address}.\nAre you sure?`
+      )
+    ) {
+      return;
+    }
+
+    mintText = 'Uploading image to ipfs...';
+    await ipfs.connect('https://ipfs.infura.io:5001');
+    console.log(image)
+    console.log(webMfile, $webMfile)
+    console.log([blob])
+    const file2 = new File([blob], 'blob.webm')
+    console.log(file2)
+    // file2.size = blob.size
+    // console.log(file2)
+    let file_ = await ipfs.add(file2);
+    console.log(file_)
+    const image_uri = `https://gateway.ipfs.io/ipfs/${file_.path}`;
+    data.image = image_uri;
+    console.log('IMAGE URL', image_uri);
+
+    mintText = 'Uploading code to ipfs...';
+    file_ = await ipfs.add(code);
+    const code_uri = `https://gateway.ipfs.io/ipfs/${file_.path}`;
+    console.log('CODE URL', code_uri);
+    delete data.interactive_nft.code;
+    data.interactive_nft.code_uri = code_uri;
+
+    let nextId = await contract.methods.totalSupply().call();
+    // here is where you'd set external_url in the json
+
+    mintText = 'Uploading NFT metadata to ipfs...';
+    file_ = await ipfs.add(JSON.stringify(data));
+    const json_uri = `https://gateway.ipfs.io/ipfs/${file_.path}`;
+
+    mintText =
+      'Adding NFT to blockchain - See MetaMask (or the like) for transaction';
+    console.log('JSON URL', json_uri);
+
+    await contract.methods.mint(nextId, account, json_uri).send();
+    dispatch('minted');
+  }
+
 </script>
 
   
@@ -806,7 +833,7 @@ function render() {
 
       <div class="minting">
         {#if !mintText}
-          <button disabled={!valid} on:click={mint}>Mint this!</button>
+          <button on:click={mint}>Mint this!</button>
         {:else}<strong>{mintText}</strong>{/if}
       </div>
     </form>
@@ -815,7 +842,7 @@ function render() {
     <h2>Preview</h2>
     <div bind:this={view} />
       <div class="buttons">
-      <button id="start">Start recording to WebM</button>
+      <button id="start" >Start recording to WebM</button>
       <button id="stop">Stop (or wait 4 seconds)</button>
     </div>
   </div>

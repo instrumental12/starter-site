@@ -36,6 +36,8 @@ export async function initProvider(app) {
     from: account,
   });
 
+  console.log(contract)
+
   app.set({
     web3,
     contract,
