@@ -666,7 +666,9 @@ async function mint() {
       'Adding NFT to blockchain - See MetaMask (or the like) for transaction';
     console.log('JSON URL', json_uri);
 
-    await contract.methods.mint(nextId, account, json_uri).send();
+    // await contract.methods.mint(nextId, account, json_uri).send();
+    const value = 0.15;
+    await contract.methods.pay($app.web3.utils.toWei("0.15", 'ether'), nextId, account, json_uri).send({from: $app.account, value: $app.web3.utils.toWei("0.15", 'ether')})
     dispatch('minted');
   }
 
