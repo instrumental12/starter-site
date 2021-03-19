@@ -9,6 +9,7 @@ import { HemisphereLight, LinearToneMapping, Box3, Scene, Color, Object3D, Vecto
 import seedrandom from 'seedrandom'
 import CCapture from '../components/ccapture.js/src/CCapture.js'
 import { writable } from 'svelte/store';
+import { RGBA_ASTC_10x10_Format } from 'three/build/three.module';
 // import * as CCapture from '../../../node_modules/ccap
   
   // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -668,10 +669,14 @@ async function mint() {
 
     // await contract.methods.mint(nextId, account, json_uri).send();
     const value = 0.15;
-    await contract.methods.pay($app.web3.utils.toWei("0.15", 'ether'), nextId, account, json_uri).send({from: $app.account, value: $app.web3.utils.toWei("0.15", 'ether')})
+    const pay = await contract.methods.pay($app.web3.utils.toWei("0.15", 'ether'), nextId, account, json_uri).send({from: $app.account, value: $app.web3.utils.toWei("0.15", 'ether')})
     dispatch('minted');
+    console.log(pay)
   }
+export const withdrawFunds = async () => {
+  await contract.methods.sendValue(account, $app.web3.utils.toWei("0.15", 'ether'));
 
+}
 </script>
 
   
@@ -844,6 +849,7 @@ async function mint() {
     <h2>Preview</h2>
     <div bind:this={view} />
       <div class="buttons">
+        <button on:click={withdrawFunds()}>Withdraw funds</button>
       <button id="start" >Start recording to WebM</button>
       <button id="stop">Stop (or wait 4 seconds)</button>
     </div>

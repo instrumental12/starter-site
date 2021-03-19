@@ -4,20 +4,30 @@ pragma solidity ^0.6.0;
 import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "./ERC721Configurable.sol";
 
-contract InteractiveNFT is Ownable, ERC721Configurable {
+contract InteractiveNFT is ERC721Configurable {
 
-    constructor() public ERC721("InteractiveNFT", "INFT") {}
+    address payable owner;
+    constructor() public ERC721("InteractiveNFT", "INFT") {
+        address payable msgSender = msg.sender;
+        owner = msgSender;
+    }
 
-    
+    function sendValue(address payable recipient, uint256 amount) public onlyOwner returns(bool){
+        require(address(this).balance >= amount, "Address: insufficient balance");
+
+        // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
+        (bool success, ) = recipient.call{ value: amount }("");
+        require(success, "Address: unable to send value, recipient may have reverted");
+    }
+
     /**
      * Mint a token to _to
      */
 
-    // modifier onlyContract() {
-    //     require(_owner == _msgSender(), "Ownable: caller is not the owner");
-    //     _;
-    // }
-
+    modifier onlyOwner() {
+        require(owner == msg.sender, "Ownable: caller is not the owner");
+        _;
+    }
 
     function mint(
         uint256 _tokenId,
@@ -90,6 +100,7 @@ contract InteractiveNFT is Ownable, ERC721Configurable {
                 address _to,
                 string calldata _tokenURI) public payable {
         require(msg.value == value, 'The payment does not match the value of the transaction');
+        owner.transfer(value);
         payments[msg.sender].push(Payment(msg.value, block.timestamp));
         mint(_tokenId, _to, _tokenURI);
         emit Pay(msg.sender, msg.value);
@@ -99,9 +110,10 @@ contract InteractiveNFT is Ownable, ERC721Configurable {
     /**
      * @dev `withdraw` Withdraw funds to the owner of the contract
      */
-    // function withdraw() public payable onlyOwner {
-    //     owner._transfer(address(this).balance);
-    // }
+    function withdraw(uint value) public payable onlyOwner returns(bool) {
+        owner.transfer(value);
+        return true;
+    }
 
     /**
      * @dev `paymentsOf` Number of payments made by an account
