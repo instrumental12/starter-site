@@ -173,7 +173,10 @@ import { RGBA_ASTC_10x10_Format } from 'three/build/three.module';
   }
 
   
-let camera, scene, renderer, mesh;
+let camera = writable(); 
+let scene = writable();
+let renderer = writable();
+let mesh = writable();
 
 const fr = 30;
 const limit = 20;
