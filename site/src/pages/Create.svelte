@@ -5,11 +5,11 @@
   import { ipfs } from '../utils.js';
   // import { init } from "../components/captureWebM"
   import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { HemisphereLight, LinearToneMapping, Box3, Scene, Color, Object3D, Vector3, PerspectiveCamera, PointLight, SphereGeometry, MeshStandardMaterial, InstancedMesh, Matrix4, AxesHelper, WebGLRenderer } from 'three'
+import { HemisphereLight, LinearToneMapping, Box3, SpotLight, Scene, Color, Object3D, Vector3, PerspectiveCamera, PointLight, SphereGeometry, MeshStandardMaterial, InstancedMesh, Matrix4, AxesHelper, WebGLRenderer } from 'three'
 import seedrandom from 'seedrandom'
 import CCapture from '../components/ccapture.js/src/CCapture.js'
 import { writable } from 'svelte/store';
-import { RGBA_ASTC_10x10_Format } from 'three/build/three.module';
+// import { RGBA_ASTC_10x10_Format } from 'three/build/module';
 // import * as CCapture from '../../../node_modules/ccap
   
   // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -171,316 +171,497 @@ import { RGBA_ASTC_10x10_Format } from 'three/build/three.module';
     delete attributes[key];
     attributes = attributes;
   }
+  let seed = 'Buck';
+//Stabilization likely should *always* be on
+//TODO: Enable tweening of camera viewpoint
+let camera, scene, renderer, mesh, headlight;
 
-  
-let camera = writable(); 
-let scene = writable();
-let renderer = writable();
-let mesh = writable();
-
+//Declare constants
 const fr = 30;
 const limit = 20;
 const actual = 5;
 let sizes = 350;
 const recorder = new CCapture({
-  verbose: false,
-  display: true,
-  
-  framerate: fr,
-  quality: 75,
-  format: 'webm',
-  timeLimit: limit,
-  frameLimit: 0,
-  autoSaveTime: 0
+	verbose: false,
+	display: true,
+	framerate: fr,
+	quality: 75,
+	format: 'webm',
+	timeLimit: limit,
+	frameLimit: 0,
+	autoSaveTime: 0
 });
 
-//Could leverage rand2 to add pure randomness based on Date or the like
-let rand = new seedrandom("Pegasus");
-//let rand2 = rand;//new seedrandom('Firestorrm');
-let random = rand();
-let b = random * 208186.01 / 1000000.01;
-
-const dummy = new Object3D();
-let visPos = [];
-let pos = [];
-let totalAve = new Vector3();
-let offsets = new Vector3();
-
-let recording = false;
-let frame = 0;
-let speedMult = 1;
-
 let STABILIZE = true;
-let CAMERA_LOCK = true;
+let CAMERA_LOCK = false;
 let OVER_POWER= 7;
+let HEADLAMP = false;
 
-
-let size, intensityBoost, metaly, rough, emissivity, random2, random3, random4, rotationRate, rotationRate2, rotationRate3, controls;
-const color = new Color();
-size = 0.25 + random;
-intensityBoost = 1;
-
-const palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
-randomize();
-
-function blobToFile(theBlob, fileName){
-    //A Blob() is almost a File() - it's just missing the two properties below which we will add
-    theBlob.lastModifiedDate = new Date();
-    theBlob.name = fileName;
-    return theBlob;
+var params = {
+	stabilize: STABILIZE,
+	lock: CAMERA_LOCK 
 }
-const amount = rand()*20+20;
-const count = Math.pow( amount, 3 );
-// setupButtons();
-export const startRecording = () => {
-// e.preventDefault();
-    resize(sizes,sizes);
-    recorder.start();
-    // $start.style.display = 'none';
-    recording = true;
-    speedMult = OVER_POWER;
-};
-// onMount(async ()=>{
-//   init();
-// })
+const color = new Color();
 
+
+//Declare global vars
+let rand, random, b, dummy, visPos, pos, totalAve, offsets, recording, frame, speedMult, count, amount, newSeed, palette;
+let size, intensityBoost, metaly, rough, emissivity, random2, random3, random4, rotationRate, rotationRate2, rotationRate3, controls, container;
+
+setupButtons();
+
+
+export const init = async () => {
+	// const $attributes = document.getElementById('attributes');
+
+	palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
+	rand = new seedrandom(seed);
+	random = rand();
+	b = random * 208186.01 / 1000000.01;
+	dummy = new Object3D();
+	visPos = [];
+	pos = [];
+	totalAve = new Vector3();
+	offsets = new Vector3();
+	recording = false;
+	frame = 0;
+	speedMult = 1;
+
+	size = 0.25 + random;
+	intensityBoost = 1;
+
+	randomize();
+
+
+	amount = rand()*20+20;
+	count = Math.pow( amount, 3 );
+
+
+	var props = {
+		metal: (metaly > 0),
+		yRot: (rotationRate > 0),
+		xRot: (rotationRate2 > 0),
+		zRot: (rotationRate3 > 0)
+	};
+	var rarity = 1/((props.metal ? 0.2 : 0.8) * (props.yRot ? 0.25 : 0.75) * (props.xRot ? 0.25*0.25 : (1-0.25*0.25)) * (props.zRot ? 0.25*0.25*0.25 : (1-0.25*0.25*0.25)));
+	var attr = "Metallic: " + (props.metal ? "True" : "False") + "\n" +
+			"Has y-rotation: " + (props.yRot ? "True" : "False") + "\n" +
+			"Has x-rotation: " + (props.xRot ? "True" : "False") + "\n" +
+			"Has z-rotation: " + (props.zRot ? "True" : "False") + "\n" +
+			"Number of Particles: " + count + "\n" +
+			"Size of Particles: " + size + "\n" +
+			"Speed mutliplier: " + random + "\n" + 
+			"Rarity: 1 in " + rarity.toFixed(0);
+
+	// $attributes.value = attr;
+ 
+
+	camera = new PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+	camera.position.set( 77, 77, 77 );
+	camera.lookAt( 0, 0, 0 );
+
+	scene = new Scene();
+	scene.background = new Color( 0x444444 );
+	initLights(scene, camera);
+
+
+	const geometry = new SphereGeometry( size, 5, 3 );
+
+	const material = new MeshStandardMaterial( {
+		color: 0xffffff,
+		roughness: rough, //Shinyness
+		metalness: metaly,
+		emissiveIntensity: emissivity,
+		emissive: 0x25fae8
+	});
+	material.color = material.color.convertSRGBToLinear();
+	material.emissive = material.emissive.convertSRGBToLinear();
+
+	mesh = new InstancedMesh( geometry, material, count );
+
+	let counter = 0;
+	const offset = ( amount - 1 ) / 2;
+
+	const matrix = new Matrix4();
+
+	for ( let x = 0; x < amount; x ++ ) {
+
+		for ( let y = 0; y < amount; y ++ ) {
+
+			for ( let z = 0; z < amount; z ++ ) {
+
+				matrix.setPosition( offset - x, offset - y, offset - z );
+
+				var index = getQuadrant(x,y,z,offset);
+				color.setHex(palette[index]).convertSRGBToLinear();
+
+				mesh.setMatrixAt( counter, matrix );
+				mesh.setColorAt( counter, color );
+			
+				var position = new Vector3( offset - x, offset - y, offset - z );
+				pos.push(position);
+				visPos.push(position.clone());
+				counter++;
+
+			}
+
+		}
+
+	}
+
+
+	scene.add( mesh );
+	geometry.dispose();
+    material.dispose();
+
+	if(typeof newSeed === 'undefined') {
+		renderer = new WebGLRenderer( { antialias: true } );
+		renderer.setPixelRatio( window.devicePixelRatio );
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.toneMapping = LinearToneMapping;
+	  	
+		document.body.appendChild( renderer.domElement );
+		// window.addEventListener( 'resize', onWindowResize );
+	}
+
+	controls = new OrbitControls(camera, renderer.domElement);
+
+
+}
+
+function reset() {
+	seed = (' ' + newSeed).slice(1);//Force deep copy of newSeed
+	//Remove all
+	scene.traverse(object => {
+		if (!object.isMesh) return
+		
+		object.geometry.dispose()
+
+		if (object.material.isMaterial) {
+			cleanMaterial(object.material)
+		} else {
+			// an array of materials
+			for (const material of object.material) cleanMaterial(material)
+		}
+	})
+
+	
+
+
+
+	while(scene.children.length > 0){ 
+    	scene.remove(scene.children[0]);
+	}
+
+	renderer.renderLists.dispose();
+
+	init();
+	animate();
+}
+
+const cleanMaterial = material => {
+		material.dispose()
+
+		// dispose textures
+		for (const key of Object.keys(material)) {
+			const value = material[key]
+			if (value && typeof value === 'object' && 'minFilter' in value) {
+				value.dispose()
+			}
+	}
+}
 
 function randomize() {
-  //Randomize palette
-  var val;
-  for(let iter = 0; iter < palette.length; iter++) {
-      val = palette[iter];
-      var num = parseInt(Number(val), 10);
-      num += Math.floor(16777215*rand()%16777215);
-      var newVal = "0x"+num.toString(16);
-      console.log(newVal);
-      palette[iter] = newVal;
-  }
+	//Randomize palette
+	for(var iter = 0; iter < palette.length; iter++) {
+		var val = palette[iter];
+	    var num = parseInt(Number(val), 10);
+	    num += Math.floor(16777215*rand()%16777215);
+	    var newVal = "0x"+num.toString(16);
+	    palette[iter] = newVal;
+	}
 
-  //Randomize if shiny or not
-  //0.8 to keep it kinda rare
-  if(rand() > 0.8) {
-    metaly = rand();
-    rough = rand();
-    emissivity = 0.1*rand();
-    intensityBoost = 1;
-  } else {
-    metaly = 0; 
-    rough = 1;
-    emissivity = 0;
-  }
+	//Randomize if shiny or not
+	//0.8 to keep it kinda rare
+	if(rand() > 0.8) {
+		metaly = rand();
+		rough = rand();
+		emissivity = 0.1*rand();
+	  	intensityBoost = 1;
+	} else {
+		metaly = 0; 
+		rough = 1;
+		emissivity = 0;
+	}
 
-  random2 = rand() * ( random > 0.5 ? 1 : -1);
-  random3 = rand() * ( random2 > 0.5 ? 1 : -1);
-  random4 = rand() * ( random3 > 0.5 ? 1: -1);
-  rotationRate = (rand() > 0.75 ? 0.005 : 0);
-  rotationRate2 = (rand() > 0.75 & rotationRate > 0 ? 0.005 : 0);
-  rotationRate3 = (rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0 ? 0.005 : 0);
+	random2 = rand() * ( random > 0.5 ? 1 : -1);
+	random3 = rand() * ( random2 > 0.5 ? 1 : -1);
+	random4 = rand() * ( random3 > 0.5 ? 1: -1);
+	rotationRate = (rand() > 0.75 ? 0.005 : 0);
+	rotationRate2 = (rand() > 0.75 & rotationRate > 0 ? 0.005 : 0);
+	rotationRate3 = ((rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0) ? 0.005 : 0);
+  
 }
 
-const init = () => {
 
-  camera = new PerspectiveCamera( 60, innerWidth / innerHeight, 0.1, 1000 );
-  camera.position.set( 77, 77, 77 );
-  camera.lookAt( 0, 0, 0 );
-
-  scene = new Scene();
-  scene.background = new Color( 0x444444 );
-  initLights(scene);
-
-  //ILLUMINGATED CAMERA
-  const pointLight = new PointLight( 0xFBFAF5, intensityBoost, 300 );
-  camera.add( pointLight );
-  scene.add(camera);
-
-
-  const geometry = new SphereGeometry( size, 5, 3 );
-  //const material = new MeshStandardMaterial();
-
-  /*
-    const material = new MeshPhongMaterial( { 
-      color: 0xffffff,
-      //envMap: envMap, // optional environment map
-      specular: 0x25fae8,
-      shininess: 10*(1-rough)
-  } ) */
-
-
-  const material = new MeshStandardMaterial( {
-    color: 0xffffff,
-    roughness: rough, //Shinyness
-    metalness: metaly,
-    emissiveIntensity: emissivity,
-    emissive: 0x25fae8
-  });
-  material.color = material.color.convertSRGBToLinear();
-  material.emissive = material.emissive.convertSRGBToLinear();
-
-  mesh = new InstancedMesh( geometry, material, count );
-
-  let counter = 0;
-  const offset = ( amount - 1 ) / 2;
-
-  const matrix = new Matrix4();
-
-  for ( let x = 0; x < amount; x ++ ) {
-
-    for ( let y = 0; y < amount; y ++ ) {
-
-      for ( let z = 0; z < amount; z ++ ) {
-
-        matrix.setPosition( offset - x, offset - y, offset - z );
-
-        var index = getQuadrant(x,y,z,offset);
-        color.setHex(palette[index]).convertSRGBToLinear();
-
-        mesh.setMatrixAt( counter, matrix );
-        mesh.setColorAt( counter, color );
-      
-        var position = new Vector3( offset - x, offset - y, offset - z );
-        pos.push(position);
-        visPos.push(position.clone());
-        counter++;
-
-      }
-
-    }
-
-  }
-
-
-  scene.add( mesh );
-
-  //Axis reference location
-  const axesHelper = new AxesHelper( 50);
-  scene.add( axesHelper );
-
-  renderer = new WebGLRenderer( { antialias: true } );
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( innerWidth, innerHeight );
-  renderer.toneMapping = LinearToneMapping;
-  console.log(
-  document.getElementById('buttons')
-  )
-  document.body.appendChild( renderer.domElement );
-
-  controls = new OrbitControls(camera, renderer.domElement);
-  // window.addEventListener( 'resize', onWindowResize );
-
-}
-
+init();
 
 function fitCameraToSelection( camera, controls, posArray, fitOffset = 1.2 ) {
   
-  const box = new Box3().setFromPoints(posArray);
+	const box = new Box3().setFromPoints(posArray);
 
-  const size = box.getSize( new Vector3() );
-  const center = box.getCenter( new Vector3() );
-  const maxSize = Math.max( size.x, size.y, size.z ); //Find the maximum dimension of the box
-  const fitHeightDistance = maxSize / ( 2 * Math.atan( Math.PI * camera.fov / 360 ) ); //Fancy math
-  const fitWidthDistance = fitHeightDistance / camera.aspect; //More fancy math to find distance camera needs to be to see
-  const distance = fitOffset * Math.max( fitHeightDistance, fitWidthDistance ); //Take whichever of these distances is larger and use it with the offset
+	const size = box.getSize( new Vector3() );
+	const center = box.getCenter( new Vector3() );
 
-  const direction = controls.target.clone()
-  .sub( camera.position ) //Find camera position relative to target
-  .normalize() //Get unit normal vector for this value
-  .multiplyScalar(distance); //Convert that unit normal to distance camera needs to be from target to fit everything
+	const maxSize = Math.max( size.x, size.y, size.z ); //Find the maximum dimension of the box
+	const fitHeightDistance = maxSize / ( 2 * Math.atan( Math.PI * camera.fov / 360 ) ); //Fancy math
+	const fitWidthDistance = fitHeightDistance / camera.aspect; //More fancy math to find distance camera needs to be to see
+	const distance = fitOffset * Math.max( fitHeightDistance, fitWidthDistance ); //Take whichever of these distances is larger and use it with the offset
 
-  controls.maxDistance = distance * 10; //
-  //controls.target.copy( center ); //This line being disabled reduces the "jerkiness of everything" – unecessary since we are already centered at zero
+	const direction = controls.target.clone()
+	.sub( camera.position ) //Find camera position relative to target
+	.normalize() //Get unit normal vector for this value
+	.multiplyScalar(distance); //Convert that unit normal to distance camera needs to be from target to fit everything
 
-  camera.near = distance / 100;//100 is the max view distance(?)
-  camera.far = distance * 100;
-  camera.updateProjectionMatrix(); //Update the camera
+	controls.maxDistance = distance * 10; //
 
-  camera.position.copy( controls.target ).sub(direction); //Set position of camera to our target, then subtract the direction we calculated previously
+	camera.near = distance / 100;//100 is the max view distance(?)
+	camera.far = distance * 100;
+	camera.updateProjectionMatrix(); //Update the camera
 
-  controls.update();
+	camera.position.copy( controls.target ).sub(direction); //Set position of camera to our target, then subtract the direction we calculated previously
+
+	controls.update();
   
 }
 
 
 function getQuadrant(x,y,z,offset) {
-  var xPositive = offset - x > 0;
-  var yPositive = offset - y > 0;
-  var zPositive = offset - z > 0;
-  if(xPositive) {
-    if(yPositive) {
-      if(zPositive) {
-        return 0;
-      } else {
-        return 1;
-      }
-    } else {
-      if(zPositive) {
-        return 2;
-      } else {
-        return 3;
-      }
-    }
-  } else {
-    if(yPositive) {
-      if(zPositive) {
-        return 4;
-      } else {
-        return 5;
-      }
-    } else {
-      if(zPositive) {
-        return 6;
-      } else {
-        return 7;
-      }
-    }
-  }
-  return -1;
+	var xPositive = offset - x > 0;
+	var yPositive = offset - y > 0;
+	var zPositive = offset - z > 0;
+	if(xPositive) {
+		if(yPositive) {
+			if(zPositive) {
+				return 0;
+			} else {
+				return 1;
+			}
+		} else {
+			if(zPositive) {
+				return 2;
+			} else {
+				return 3;
+			}
+		}
+	} else {
+		if(yPositive) {
+			if(zPositive) {
+				return 4;
+			} else {
+				return 5;
+			}
+		} else {
+			if(zPositive) {
+				return 6;
+			} else {
+				return 7;
+			}
+		}
+	}
+	return -1;
 }
 
-function initLights(scene) {
+function initLights(scene, camera) {
+	//ILLUMINGATED CAMERA
+	headlight = new PointLight( 0xFBFAF5, intensityBoost, 300);
+	if(HEADLAMP) {
+		camera.add( headlight );
+	}
+	scene.add(camera);
 
-  
-    const light1 = new HemisphereLight( 0xffffff, 0xD9D9D9 );
-    light1.position.set( - 50, 70, 50 );
-    scene.add( light1 );
+	const keyLight = new SpotLight( 0xffffff, intensityBoost);
+	keyLight.position.set(55, 99, 88);
+	scene.add( keyLight );
 
-    const light2 = new HemisphereLight( 0xffffff, 0xD9D9D9, 0.5 );
-    light2.position.set( - 50, - 70, - 50 );
-    scene.add( light2 );
+	const fillLight = new SpotLight( 0xffa95c, intensityBoost/2);
+	fillLight.position.set(99, 77, 55);
+	scene.add( fillLight );
 
-    /*
-      const light3 = new PointLight( 0xFBFAF5, 2, 300 );
-    light3.position.set( 100, 100, 100 );
-    light3.color = light3.color.convertSRGBToLinear();
-    scene.add( light3 );
-
-    const light4 = new PointLight( 0xFBFAF5, 1, 300 );
-    light4.position.set( -100, -100, -100 );
-    light4.color = light4.color.convertSRGBToLinear();
-    scene.add( light4 );
-    */
+	const rimLight = new SpotLight( 0xffffff, intensityBoost);
+	rimLight.position.set(-99, 88, -99);
+	scene.add( rimLight );
 }
 
-export const onWindowResize = () => {
-  console.log('asdf')
-  if (recording) {
-    return;
-  }
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
+function onWindowResize() {
+	if (recording) {
+		return;
+	}
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
 
-  renderer.setSize( innerWidth, innerHeight );
+	renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
 
 function setupButtons(){
-// const $start = document.getElementById('start');
+	const $start = document.getElementById('start');
+	const $headlamp = document.getElementById('headlamp');
+	const $stabilize = document.getElementById('stabilize');
+	const $lock = document.getElementById('lock');
+	const $reset = document.getElementById('reset');
+	// $start.addEventListener('click', e => {
+	// 	e.preventDefault();
+	// 	resize(sizes,sizes);
+	// 	recorder.start();
+	// 	$start.style.display = 'none';
+	// 	recording = true;
+	// 	speedMult = OVER_POWER;
+	// }, false);
+	// $headlamp.addEventListener('click', e => {
+	// 	e.preventDefault();
+	// 	if(HEADLAMP) {
+	// 		$headlamp.innerHTML = "Enable Headlamp"
+	// 		HEADLAMP = false;
+	// 		camera.remove(headlight);
+	// 	} else {
+	// 		$headlamp.innerHTML = "Disable Headlamp"
+	// 		HEADLAMP = true;
+	// 		camera.add(headlight);
+	// 	}
 
-    
+	// }, false);
+	// $stabilize.addEventListener('click', e => {
+	// 	e.preventDefault();
+	// 	if(params.stabilize) {
+	// 		$stabilize.innerHTML = "Enable Stabilization"
+	// 		params.stabilize = false;
+	// 	} else {
+	// 		$stabilize.innerHTML = "Disable Stabilization"
+	// 		params.stabilize = true;
+	// 	}
+
+	// }, false);
+	// $lock.addEventListener('click', e => {
+	// 	e.preventDefault();
+	// 	if(params.lock) {
+	// 		$lock.innerHTML = "Enable Camera-Lock"
+	// 		params.lock = false;
+	// 	} else {
+	// 		$lock.innerHTML = "Disable Camera-Lock"
+	// 		params.lock = true;
+	// 	}
+
+	// }, false);
+	// $reset.addEventListener('click', e => {
+	// 	e.preventDefault();
+	// 	newSeed = document.getElementById("textareaID").value;
+
+	// 	reset();
+	// }, false);
+}
+
+// function onRecordingEnd() {
+// 	recording = false;
+// 	recorder.stop();
+// 	recorder.save();
+
+// 	onWindowResize();
+// 	const $start = document.getElementById('start');
+// 	$start.style.display = 'inline';
+// 	speedMult = 1;
+// }
+
+function resize(width, height){
+	camera.aspect = width / height;
+	camera.updateProjectionMatrix();
+	renderer.setSize(width, height);
+}
 
 
-  
+function animate() {
+	render();
+
+	recorder.capture(renderer.domElement);
+	if(recording) {
+		frame++;
+		if(frame > fr*actual) {
+			onRecordingEnd();
+		}
+	}
+	requestAnimationFrame( animate );
+}
+
+function render() {
+	const SCALING_FACTOR = 10;
+
+	if ( mesh ) {
+		var reps = 0;
+		while(reps < speedMult) { 
+
+			var len = pos.length;
+
+			if(params.stabilize) {
+				offsets.copy(totalAve).divideScalar(len).negate();
+				totalAve.set(0,0,0);
+			}
+
+			mesh.rotation.x += rotationRate2*random3;
+		  	mesh.rotation.y += rotationRate*random2;
+	   		mesh.rotation.z += rotationRate3*random4;
+			let i = 0;
+
+			while(i < count) {	
+
+				var position = pos[i];
+				var visPosition = visPos[i];
+
+			    var dx = position.x/SCALING_FACTOR;
+			    var dy = position.y/SCALING_FACTOR;
+			    var dz = position.z/SCALING_FACTOR;
+			      
+			    var x1 = (-b*dx+Math.sin(dy))*random;
+			    var y1 = (-b*dy+Math.sin(dz))*random;
+			    var z1 = (-b*dz+Math.sin(dx))*random;
+
+			    //var randCall = rand();
+			    var xm = rand();
+			    var ym = rand();//randCall*random3;
+			    var zm = rand();//randCall*random4;
+
+			    position.x += x1 + xm/5;
+			    position.y += y1 + ym/5;
+			    position.z += z1 + zm/5;	
+	        	
+	        	visPosition.copy(position).add(offsets);
+
+			    if(params.stabilize) {
+					dummy.position.set( visPosition.x,  visPosition.y, visPosition.z );
+					totalAve = totalAve.addVectors(totalAve, position);
+			  	} else {
+	       			dummy.position.set( position.x,  position.y, position.z );
+	        	}
+			    
+				dummy.updateMatrix();
+				mesh.setMatrixAt( i++, dummy.matrix );
+			}
+			reps++;
+    	}
+		mesh.instanceMatrix.needsUpdate = true;
+		mesh.instanceColor.needsUpdate = true;
+
+	}
+	if(params.lock) {
+		fitCameraToSelection(camera, controls, visPos, 1.3)
+    }
+	renderer.render( scene, camera );
 
 }
+
+animate();
+
+
+
 var webMfile = writable();
 var blob = new Blob();
 function onRecordingEnd() {
@@ -506,128 +687,7 @@ function onRecordingEnd() {
   speedMult = 1;
 }
 
-const resize = (width, height) => {
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(width, height);
-}
 
-const animate = () => {
-  render();
-  recorder.capture(renderer.domElement);
-  if(recording) {
-    frame++;
-    if(frame > fr*actual) {
-      onRecordingEnd();
-    }
-  }
-  requestAnimationFrame( animate );
-}
-init();
-animate();
-startRecording();
-function render() {
-  const SCALING_FACTOR = 10;
-
-  if ( mesh ) {
-    var reps = 0;
-    while(reps < speedMult) { 
-
-      var len = pos.length;
-      if(STABILIZE) {
-          offsets.copy(totalAve).divideScalar(len).negate();
-          //offsets = totalAve.clone().divideScalar(len).negate();
-          totalAve.set(0,0,0);
-      }
-
-      mesh.rotation.x += rotationRate2*random3;
-        mesh.rotation.y += rotationRate*random2;
-         mesh.rotation.z += rotationRate3*random4;
-      //var b = 0.1313;
-      let i = 0;
-
-      while(i < count) {  
-
-        var position = pos[i];
-        var visPosition = visPos[i];
-
-          var dx = position.x/SCALING_FACTOR;
-          var dy = position.y/SCALING_FACTOR;
-          var dz = position.z/SCALING_FACTOR;
-            
-          var x1 = (-b*dx+Math.sin(dy))*random;
-          var y1 = (-b*dy+Math.sin(dz))*random;
-          var z1 = (-b*dz+Math.sin(dx))*random;
-
-          //var randCall = rand();
-          var xm = rand();
-          var ym = rand();//randCall*random3;
-          var zm = rand();//randCall*random4;
-
-          position.x += x1 + xm/5;
-          position.y += y1 + ym/5;
-          position.z += z1 + zm/5;  
-            
-          visPosition.copy(position).add(offsets);
-
-          if(STABILIZE) {
-          dummy.position.set( visPosition.x,  visPosition.y, visPosition.z );
-          totalAve = totalAve.addVectors(totalAve, position);
-          } else {
-               dummy.position.set( position.x,  position.y, position.z );
-            }
-          
-        dummy.updateMatrix();
-        mesh.setMatrixAt( i++, dummy.matrix );
-
-          /*
-          var mag = Math.sqrt(x1^2 + y1^2 + z1^2);
-          if(mag > max) {
-            max = mag;
-          }*/
-
-          //Rainbow Mapping Color Palette
-          /* This does nothing
-          re =x1/mag*255;
-          gr =y1/mag*255;
-          bl =z1/mag*255;
-          if(re < 10 & gr < 10 & bl < 10) {
-            re +=200;
-            gr +=200;
-            bl +=200;
-          }
-          color.setRGB(re, gr, bl)
-        */
-
-          //Palette Mapping 
-
-
-        
-
-
-        //dummy.rotation.y = ( Math.sin( x / 4 + time ) + Math.sin( y / 4 + time ) + Math.sin( z / 4 + time ) );
-        //dummy.rotation.z = dummy.rotation.y * 2;
-
-        //UNCOMMENT TO ENABLE DYNAMIC COLORS
-        //mesh.setColorAt( i, color);
-
-        //mesh.instanceColor.needsUpdate = true;
-        
-
-      }
-      reps++;
-      }
-    mesh.instanceMatrix.needsUpdate = true;
-    mesh.instanceColor.needsUpdate = true;
-
-  }
-  if(CAMERA_LOCK) {
-    fitCameraToSelection(camera, controls, visPos, 1.3)
-    }
-  
-  renderer.render( scene, camera );
-
-}
 async function mint() {
     if (
       !confirm(
