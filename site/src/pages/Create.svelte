@@ -329,8 +329,13 @@ export const init = async () => {
 		renderer.setPixelRatio( window.devicePixelRatio );
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		renderer.toneMapping = LinearToneMapping;
-	  	
-		document.body.appendChild( renderer.domElement ).setAttribute('id', 'renderer');
+	  
+    if (document.getElementById('renderer')) {
+      document.getElementById('start').removeChild(document.getElementById('renderer'));
+      document.getElementById('start').appendChild( renderer.domElement ).setAttribute('id', 'renderer');
+    } else {
+      document.body.appendChild( renderer.domElement ).setAttribute('id', 'renderer');
+    }
     myApp.update(m=>{ 
       m.camera = camera; m.renderer = renderer
     })
@@ -370,7 +375,6 @@ function reset() {
 	renderer.renderLists.dispose();
 
 	init();
-	animate();
 }
 
 const cleanMaterial = material => {
@@ -525,16 +529,17 @@ function onWindowResize() {
 export const start = (e) => {
 
 	const $start = document.getElementById('start');
-  e.preventDefault();
+  //e.preventDefault();
 		resize(sizes,sizes);
 		recorder.start();
 		$start.style.display = 'none';
 		recording = true;
 		speedMult = OVER_POWER;
 }
-export const headLamp = e => {
+export const headlamp = e => {
   const $headlamp = document.getElementById('headlamp');
-  e.preventDefault();
+  console.log($headlamp, 'asdf')
+  // //e.preventDefault();
 		if(HEADLAMP) {
 			$headlamp.innerHTML = "Enable Headlamp"
 			HEADLAMP = false;
@@ -548,7 +553,7 @@ export const headLamp = e => {
 
 export const stabilize = e => {
   const $stabilize = document.getElementById('stabilize');
-  	e.preventDefault();
+  	//e.preventDefault();
 		if(params.stabilize) {
 			$stabilize.innerHTML = "Enable Stabilization"
 			params.stabilize = false;
@@ -562,7 +567,7 @@ export const lock = e => {
 
 
 	const $lock = document.getElementById('lock');
-    e.preventDefault();
+    //e.preventDefault();
 		if(params.lock) {
 			$lock.innerHTML = "Enable Camera-Lock"
 			params.lock = false;
@@ -575,7 +580,7 @@ export const lock = e => {
 export const _reset = e => {
 
 	const $reset = document.getElementById('reset');
-		e.preventDefault();
+		//e.preventDefault();
 		newSeed = document.getElementById("textareaID").value;
 
 		reset();
@@ -585,7 +590,7 @@ export const _reset = e => {
 function setupButtons(){
 	
 	// $start.addEventListener('click', e => {
-	// 	e.preventDefault();
+	// 	//e.preventDefault();
 	// 	resize(sizes,sizes);
 	// 	recorder.start();
 	// 	$start.style.display = 'none';
@@ -601,7 +606,7 @@ function setupButtons(){
 
 	// }, false);
 	// $lock.addEventListener('click', e => {
-	// 	e.preventDefault();
+	// 	//e.preventDefault();
 	// 	if(params.lock) {
 	// 		$lock.innerHTML = "Enable Camera-Lock"
 	// 		params.lock = false;
@@ -612,7 +617,7 @@ function setupButtons(){
 
 	// }, false);
 	// $reset.addEventListener('click', e => {
-	// 	e.preventDefault();
+	// 	//e.preventDefault();
 	// 	newSeed = document.getElementById("textareaID").value;
 
 	// 	reset();
@@ -867,6 +872,8 @@ export const withdrawFunds = async () => {
     padding: 20px;
     text-align: center;
   }
+  canvas { width: 100%; height: 100% }
+#attributes{width: 50%; height:150px}
 </style>
 
 
@@ -970,22 +977,22 @@ export const withdrawFunds = async () => {
     <h2>Preview</h2>
     <div bind:this={view} />
     <div class="buttons">
-      <button id="start">
+      <button id="start" on:click={start()}>
         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
           <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
           <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
         </svg>
       </button>
-      <button id="headlamp">
+      <button id="headlamp" on:click={()=>headlamp()}>
       Enable Headlamp
       </button>
-      <button id="stabilize">
+      <button id="stabilize" on:click={()=>stabilize()}>
       Disable Stabilization
       </button>
-      <button id="lock">
+      <button id="lock" on:click={()=>lock()}>
       Enable Camera-Lock
       </button>
-       <button id="reset">
+       <button id="reset" on:click={()=>reset()}>
       Reset
       </button>
       <textarea name="textarea" id="textareaID" placeholder="Enter the text..."></textarea>
