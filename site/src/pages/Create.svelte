@@ -8,7 +8,7 @@
 import { HemisphereLight, LinearToneMapping, Box3, SpotLight, Scene, Color, Object3D, Vector3, PerspectiveCamera, PointLight, SphereGeometry, MeshStandardMaterial, InstancedMesh, Matrix4, AxesHelper, WebGLRenderer } from 'three'
 import seedrandom from 'seedrandom'
 import CCapture from '../components/ccapture.js/src/CCapture.js'
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 // import { RGBA_ASTC_10x10_Format } from 'three/build/module';
 // import * as CCapture from '../../../node_modules/ccap
   
@@ -62,6 +62,7 @@ import { writable } from 'svelte/store';
 //TODO: Enable tweening of camera viewpoint
   const app = getContext('app');
   const dispatch = createEventDispatcher();
+  const myApp = writable({camera: null, renderer: null})
   // export const innerHeight = writable(100)
   // export const innerWidth = writable(100)
   export let innerHeight;
@@ -94,7 +95,7 @@ import { writable } from 'svelte/store';
   let attrValue = '';
   let dependency = '';
   let dependencyType = 'script';
-  export let myApp = writable({});
+  // export let myApp = writable({});
   let _camera, _recorder;
   $: view && code && data && renderSandbox();
   // $: {
@@ -330,6 +331,10 @@ export const init = async () => {
 		renderer.toneMapping = LinearToneMapping;
 	  	
 		document.body.appendChild( renderer.domElement ).setAttribute('id', 'renderer');
+    myApp.update(m=>{ 
+      m.camera = camera; m.renderer = renderer
+    })
+    console.log(myApp.camera)
 		// window.addEventListener( 'resize', onWindowResize );
 	}
 
@@ -503,8 +508,10 @@ function initLights(scene, camera) {
 }
 
 function onWindowResize() {
-  const { camera } = myApp;
-  console.log(camera)
+  // const { camera } = myApp;
+  // const { camera , renderer} = myApp;
+  const _camera = get(myApp)
+  console.log(_camera, camera, renderer, 'onWindowResize')
 	if (recording) {
 		return;
 	}
@@ -515,12 +522,68 @@ function onWindowResize() {
 
 }
 
-function setupButtons(){
+export const start = (e) => {
+
 	const $start = document.getElementById('start');
-	const $headlamp = document.getElementById('headlamp');
-	const $stabilize = document.getElementById('stabilize');
+  e.preventDefault();
+		resize(sizes,sizes);
+		recorder.start();
+		$start.style.display = 'none';
+		recording = true;
+		speedMult = OVER_POWER;
+}
+export const headLamp = e => {
+  const $headlamp = document.getElementById('headlamp');
+  e.preventDefault();
+		if(HEADLAMP) {
+			$headlamp.innerHTML = "Enable Headlamp"
+			HEADLAMP = false;
+			camera.remove(headlight);
+		} else {
+			$headlamp.innerHTML = "Disable Headlamp"
+			HEADLAMP = true;
+			camera.add(headlight);
+		}
+}
+
+export const stabilize = e => {
+  const $stabilize = document.getElementById('stabilize');
+  	e.preventDefault();
+		if(params.stabilize) {
+			$stabilize.innerHTML = "Enable Stabilization"
+			params.stabilize = false;
+		} else {
+			$stabilize.innerHTML = "Disable Stabilization"
+			params.stabilize = true;
+		}
+}
+
+export const lock = e => {
+
+
 	const $lock = document.getElementById('lock');
+    e.preventDefault();
+		if(params.lock) {
+			$lock.innerHTML = "Enable Camera-Lock"
+			params.lock = false;
+		} else {
+			$lock.innerHTML = "Disable Camera-Lock"
+			params.lock = true;
+		}
+}
+
+export const _reset = e => {
+
 	const $reset = document.getElementById('reset');
+		e.preventDefault();
+		newSeed = document.getElementById("textareaID").value;
+
+		reset();
+}
+
+
+function setupButtons(){
+	
 	// $start.addEventListener('click', e => {
 	// 	e.preventDefault();
 	// 	resize(sizes,sizes);
@@ -530,27 +593,11 @@ function setupButtons(){
 	// 	speedMult = OVER_POWER;
 	// }, false);
 	// $headlamp.addEventListener('click', e => {
-	// 	e.preventDefault();
-	// 	if(HEADLAMP) {
-	// 		$headlamp.innerHTML = "Enable Headlamp"
-	// 		HEADLAMP = false;
-	// 		camera.remove(headlight);
-	// 	} else {
-	// 		$headlamp.innerHTML = "Disable Headlamp"
-	// 		HEADLAMP = true;
-	// 		camera.add(headlight);
-	// 	}
+	// 	
 
 	// }, false);
 	// $stabilize.addEventListener('click', e => {
-	// 	e.preventDefault();
-	// 	if(params.stabilize) {
-	// 		$stabilize.innerHTML = "Enable Stabilization"
-	// 		params.stabilize = false;
-	// 	} else {
-	// 		$stabilize.innerHTML = "Disable Stabilization"
-	// 		params.stabilize = true;
-	// 	}
+	
 
 	// }, false);
 	// $lock.addEventListener('click', e => {
@@ -572,7 +619,7 @@ function setupButtons(){
 	// }, false);
 }
 
-// function onRecordingEnd() {
+// export const onRecordingEnd = () => {
 // 	recording = false;
 // 	recorder.stop();
 // 	recorder.save();
@@ -583,7 +630,7 @@ function setupButtons(){
 // 	speedMult = 1;
 // }
 
-function resize(width, height){
+export const resize = (width, height) =>{
 	camera.aspect = width / height;
 	camera.updateProjectionMatrix();
 	renderer.setSize(width, height);
@@ -922,11 +969,33 @@ export const withdrawFunds = async () => {
   <div class="render">
     <h2>Preview</h2>
     <div bind:this={view} />
-      <div class="buttons">
-        <button on:click={withdrawFunds()}>Withdraw funds</button>
-      <button id="start" >Start recording to WebM</button>
-      <button id="stop">Stop (or wait 4 seconds)</button>
+    <div class="buttons">
+      <button id="start">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+          <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+        </svg>
+      </button>
+      <button id="headlamp">
+      Enable Headlamp
+      </button>
+      <button id="stabilize">
+      Disable Stabilization
+      </button>
+      <button id="lock">
+      Enable Camera-Lock
+      </button>
+       <button id="reset">
+      Reset
+      </button>
+      <textarea name="textarea" id="textareaID" placeholder="Enter the text..."></textarea>
+      
+      <textarea readonly id="attributes">
+      Attributes go here
+      </textarea>
+  
     </div>
+    
   </div>
 
   
