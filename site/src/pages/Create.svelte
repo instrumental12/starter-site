@@ -66,7 +66,14 @@ import { writable } from 'svelte/store';
   // export const innerWidth = writable(100)
   export let innerHeight;
   export let innerWidth;
-  console.log(innerHeight, innerWidth)
+  onMount(()=>{
+    console.log(document.getElementById('renderer'))
+    const renderer = document.getElementById('renderer')
+    document.getElementById('start').appendChild(renderer);
+    // document.body.appendChild()
+  })
+  $: console.log(innerHeight, innerWidth, document.getElementById('start'), document)
+  console.log(innerHeight, innerWidth, document.getElementById('start'), document)
   let contract = $app.contract;
   let account = $app.account;
 
@@ -87,7 +94,8 @@ import { writable } from 'svelte/store';
   let attrValue = '';
   let dependency = '';
   let dependencyType = 'script';
-
+  export let myApp = writable({});
+  let _camera, _recorder;
   $: view && code && data && renderSandbox();
   // $: {
   //   init(); animate();
@@ -259,7 +267,8 @@ export const init = async () => {
 	camera = new PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
 	camera.position.set( 77, 77, 77 );
 	camera.lookAt( 0, 0, 0 );
-
+  myApp.set({camera: camera})
+  console.log('camera', camera,myApp.camera)
 	scene = new Scene();
 	scene.background = new Color( 0x444444 );
 	initLights(scene, camera);
@@ -320,7 +329,7 @@ export const init = async () => {
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		renderer.toneMapping = LinearToneMapping;
 	  	
-		document.body.appendChild( renderer.domElement );
+		document.body.appendChild( renderer.domElement ).setAttribute('id', 'renderer');
 		// window.addEventListener( 'resize', onWindowResize );
 	}
 
@@ -494,6 +503,8 @@ function initLights(scene, camera) {
 }
 
 function onWindowResize() {
+  const { camera } = myApp;
+  console.log(camera)
 	if (recording) {
 		return;
 	}
@@ -660,7 +671,7 @@ function render() {
 
 animate();
 
-
+console.log(document.getElementById('start'))
 
 var webMfile = writable();
 var blob = new Blob();
