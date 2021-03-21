@@ -66,9 +66,10 @@ import { writable } from 'svelte/store';
   // export const innerWidth = writable(100)
   export let innerHeight;
   export let innerWidth;
-  console.log(innerHeight, innerWidth)
+  // console.log(innerHeight, innerWidth)
   let contract = $app.contract;
   let account = $app.account;
+  console.log(app.contract, "adfkjlafdl", $app.contract)
 
   let view;
   let data;
@@ -171,52 +172,112 @@ import { writable } from 'svelte/store';
     delete attributes[key];
     attributes = attributes;
   }
-  let seed = 'Buck';
-//Stabilization likely should *always* be on
-//TODO: Enable tweening of camera viewpoint
-let camera, scene, renderer, mesh, headlight;
-
-//Declare constants
-const fr = 30;
-const limit = 20;
-const actual = 5;
-let sizes = 350;
-const recorder = new CCapture({
-	verbose: false,
-	display: true,
-	framerate: fr,
-	quality: 75,
-	format: 'webm',
-	timeLimit: limit,
-	frameLimit: 0,
-	autoSaveTime: 0
-});
-
-let STABILIZE = true;
-let CAMERA_LOCK = false;
-let OVER_POWER= 7;
-let HEADLAMP = false;
-
-var params = {
-	stabilize: STABILIZE,
-	lock: CAMERA_LOCK 
-}
-const color = new Color();
+//   let seed = 'Buck';
+// //Stabilization likely should *always* be on
+// //TODO: Enable tweening of camera viewpoint
+// let camera, scene, renderer, mesh, headlight ;
 
 
-//Declare global vars
-let rand, random, b, dummy, visPos, pos, totalAve, offsets, recording, frame, speedMult, count, amount, newSeed, palette;
-let size, intensityBoost, metaly, rough, emissivity, random2, random3, random4, rotationRate, rotationRate2, rotationRate3, controls, container;
+// //Declare constants
+// const fr = 30;
+// const limit = 20;
+// const actual = 5;
+// let sizes = 350;
+// const recorder = new CCapture({
+// 	verbose: false,
+// 	display: true,
+// 	framerate: fr,
+// 	quality: 75,
+// 	format: 'webm',
+// 	timeLimit: limit,
+// 	frameLimit: 0,
+// 	autoSaveTime: 0
+// });
 
-setupButtons();
+// let STABILIZE = true;
+// let CAMERA_LOCK = false;
+// let OVER_POWER= 7;
+// let HEADLAMP = false;
+
+// var params = {
+// 	stabilize: STABILIZE,
+// 	lock: CAMERA_LOCK 
+// }
+// const color = new Color();
 
 
+// //Declare global vars
+// let rand, random, b, dummy, visPos, pos, totalAve, offsets, recording, frame, speedMult, count, amount, newSeed, palette;
+// let size, intensityBoost, metaly, rough, emissivity, random2, random3, random4, rotationRate, rotationRate2, rotationRate3, controls, container;
+// let [blah,asdf ] = [writable(),writable() ]
+
+// store./set({blah:2})
+// console.log(blah, asdf)
+// setupButtons();
+
+let seed = 'Buck'
+let rand;
+rand = new seedrandom(seed);
+
+let camera, scene, renderer, mesh, headlight ;
+
+// const rand = new seedrandom(seed)
 export const init = async () => {
+  console.log('init')
 	// const $attributes = document.getElementById('attributes');
+    let seed = 'Buck';
+  //Stabilization likely should *always* be on
+  //TODO: Enable tweening of camera viewpoint
+
+
+  //Declare constants
+  const fr = 30;
+  const limit = 20;
+  const actual = 5;
+  let sizes = 350;
+
+  let STABILIZE = true;
+  let CAMERA_LOCK = false;
+  let OVER_POWER= 7;
+  let HEADLAMP = false;
+  const recorder = new CCapture({
+    verbose: false,
+    display: true,
+    framerate: fr,
+    quality: 75,
+    format: 'webm',
+    timeLimit: limit,
+    frameLimit: 0,
+    autoSaveTime: 0
+  });
+
+
+  var params = {
+    stabilize: STABILIZE,
+    lock: CAMERA_LOCK 
+  }
+
+  // console.log(params)
+
+  app.set({params})
+  // console.log(params,'asdf', $app.params)
+  const color = new Color();
+
+
+
+  //Declare global vars
+  let random, b, dummy, visPos, pos, totalAve, offsets, recording, frame, speedMult, count, amount, newSeed, palette;
+  let size, intensityBoost, metaly, rough, emissivity, random2, random3, random4, rotationRate, rotationRate2, rotationRate3, controls, container;
+  // let [blah,asdf ] = [writable(),writable() ]
+
+// store./set({blah:2})
+// console.log(blah, asdf)
 
 	palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
-	rand = new seedrandom(seed);
+
+  // app.set({rand})
 	random = rand();
+  // app.set({rand: rand()})
 	b = random * 208186.01 / 1000000.01;
 	dummy = new Object3D();
 	visPos = [];
@@ -229,8 +290,38 @@ export const init = async () => {
 
 	size = 0.25 + random;
 	intensityBoost = 1;
+  // app.set({palette, metaly, rough, emissivity, intensityBoost, random2, random3, random4, rotationRate, rotationRate2, rotationRate3})
+	// console.log('pallette' ,app.paletee)
+  // console.log('palletee', $app.palette)
+  // randomize(palette, metaly, rough, emissivity, intensityBoost, random, random2, random3, random4, rotationRate, rotationRate2, rotationRate3);
+  for(var iter = 0; iter < palette.length; iter++) {
+		var val = palette[iter];
+	    var num = parseInt(Number(val), 10);
+      // console.log(rand())
+	    num += Math.floor(16777215*rand()%16777215);
+	    var newVal = "0x"+num.toString(16);
+	    palette[iter] = newVal;
+	}
 
-	randomize();
+	//Randomize if shiny or not
+	//0.8 to keep it kinda rare
+	if(rand() > 0.8) {
+		metaly = rand();
+		rough = rand();
+		emissivity = 0.1*rand();
+	  	intensityBoost = 1;
+	} else {
+		metaly = 0; 
+		rough = 1;
+		emissivity = 0;
+	}
+
+	random2 = rand() * ( random > 0.5 ? 1 : -1);
+	random3 = rand() * ( random2 > 0.5 ? 1 : -1);
+	random4 = rand() * ( random3 > 0.5 ? 1: -1);
+	rotationRate = (rand() > 0.75 ? 0.005 : 0);
+	rotationRate2 = (rand() > 0.75 & rotationRate > 0 ? 0.005 : 0);
+	rotationRate3 = ((rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0) ? 0.005 : 0);
 
 
 	amount = rand()*20+20;
@@ -262,8 +353,25 @@ export const init = async () => {
 
 	scene = new Scene();
 	scene.background = new Color( 0x444444 );
-	initLights(scene, camera);
+	// initLights(scene, camera, intensityBoost);
+  //ILLUMINGATED CAMERA
+	headlight = new PointLight( 0xFBFAF5, intensityBoost, 300);
+	if(HEADLAMP) {
+		camera.add( headlight );
+	}
+	scene.add(camera);
 
+	const keyLight = new SpotLight( 0xffffff, intensityBoost);
+	keyLight.position.set(55, 99, 88);
+	scene.add( keyLight );
+
+	const fillLight = new SpotLight( 0xffa95c, intensityBoost/2);
+	fillLight.position.set(99, 77, 55);
+	scene.add( fillLight );
+
+	const rimLight = new SpotLight( 0xffffff, intensityBoost);
+	rimLight.position.set(-99, 88, -99);
+	scene.add( rimLight );
 
 	const geometry = new SphereGeometry( size, 5, 3 );
 
@@ -320,19 +428,178 @@ export const init = async () => {
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		renderer.toneMapping = LinearToneMapping;
 	  	
-		document.body.appendChild( renderer.domElement );
+		document.getElementById('buttons').appendChild( renderer.domElement );
+    // console.log(document.getElementById('start'))
 		// window.addEventListener( 'resize', onWindowResize );
 	}
 
 	controls = new OrbitControls(camera, renderer.domElement);
 
+  // const { recorder, recording, frame , renderer } = $app;
+  const animate = () => {
+    // render();
+    const SCALING_FACTOR = 10;
+    // let { mesh, params, camera, controls } = $app;
+    // mesh, params, camera, controls, 'renderlogs')
+    // console.log()
+    // console.log($app.params)console.log(
+    if ( mesh ) {
+      var reps = 0;
+      while(reps < speedMult) { 
 
+        var len = pos.length;
+
+        if(params.stabilize) {
+          offsets.copy(totalAve).divideScalar(len).negate();
+          totalAve.set(0,0,0);
+        }
+
+        mesh.rotation.x += rotationRate2*random3;
+          mesh.rotation.y += rotationRate*random2;
+          mesh.rotation.z += rotationRate3*random4;
+        let i = 0;
+
+        while(i < count) {	
+
+          var position = pos[i];
+          var visPosition = visPos[i];
+
+            var dx = position.x/SCALING_FACTOR;
+            var dy = position.y/SCALING_FACTOR;
+            var dz = position.z/SCALING_FACTOR;
+              
+            var x1 = (-b*dx+Math.sin(dy))*random;
+            var y1 = (-b*dy+Math.sin(dz))*random;
+            var z1 = (-b*dz+Math.sin(dx))*random;
+
+            //var randCall = rand();
+            var xm = rand();
+            var ym = rand();//randCall*random3;
+            var zm = rand();//randCall*random4;
+
+            position.x += x1 + xm/5;
+            position.y += y1 + ym/5;
+            position.z += z1 + zm/5;	
+              
+              visPosition.copy(position).add(offsets);
+
+            if(params.stabilize) {
+            dummy.position.set( visPosition.x,  visPosition.y, visPosition.z );
+            totalAve = totalAve.addVectors(totalAve, position);
+            } else {
+                dummy.position.set( position.x,  position.y, position.z );
+              }
+            
+          dummy.updateMatrix();
+          mesh.setMatrixAt( i++, dummy.matrix );
+        }
+        reps++;
+        }
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor.needsUpdate = true;
+
+    }
+    if(params.lock) {
+      fitCameraToSelection(camera, controls, visPos, 1.3)
+      }
+    renderer.render( scene, camera );
+
+    recorder.capture(renderer.domElement);
+    if(recording) {
+      frame++;
+      if(frame > fr*actual) {
+        onRecordingEnd();
+      }
+    }
+      requestAnimationFrame( animate );
+  }
+  animate();
+  
+  // app.set({camera, scene, renderer, mesh, headlight})
+  // app.set({fr, limit, actual, sizes, STABILIZE,CAMERA_LOCK, OVER_POWER, HEADLAMP})
+  // app.set({recorder, color})
+
+  // app.set({random, b, dummy, visPos, pos, totalAve, offsets, recording, frame, speedMult, count, amount, newSeed, renderer, mesh, seed, attr, rarity, intensityBoost})
+  // app.set({controls})
+  // app.set({geometry})
+  // app.set({random2, random3, random4, rotationRate, rotationRate2, rotationRate3, controls, container})
+  // animate();
+  // app=app;
+  function setupButtons(){
+    const $start = document.getElementById('start');
+    const $headlamp = document.getElementById('headlamp');
+    const $stabilize = document.getElementById('stabilize');
+    const $lock = document.getElementById('lock');
+    const $reset = document.getElementById('reset');
+    // $start.addEventListener('click', e => {
+    // 	e.preventDefault();
+    // 	resize(sizes,sizes);
+    // 	recorder.start();
+    // 	$start.style.display = 'none';
+    // 	recording = true;
+    // 	speedMult = OVER_POWER;
+    // }, false);
+    // $headlamp.addEventListener('click', e => {
+    // 	e.preventDefault();
+    // 	if(HEADLAMP) {
+    // 		$headlamp.innerHTML = "Enable Headlamp"
+    // 		HEADLAMP = false;
+    // 		camera.remove(headlight);
+    // 	} else {
+    // 		$headlamp.innerHTML = "Disable Headlamp"
+    // 		HEADLAMP = true;
+    // 		camera.add(headlight);
+    // 	}
+
+    // }, false);
+    // $stabilize.addEventListener('click', e => {
+    // 	e.preventDefault();
+    // 	if(params.stabilize) {
+    // 		$stabilize.innerHTML = "Enable Stabilization"
+    // 		params.stabilize = false;
+    // 	} else {
+    // 		$stabilize.innerHTML = "Disable Stabilization"
+    // 		params.stabilize = true;
+    // 	}
+
+    // }, false);
+    // $lock.addEventListener('click', e => {
+    // 	e.preventDefault();
+    // 	if(params.lock) {
+    // 		$lock.innerHTML = "Enable Camera-Lock"
+    // 		params.lock = false;
+    // 	} else {
+    // 		$lock.innerHTML = "Disable Camera-Lock"
+    // 		params.lock = true;
+    // 	}
+
+    // }, false);
+    // $reset.addEventListener('click', e => {
+    // 	e.preventDefault();
+    // 	newSeed = document.getElementById("textareaID").value;
+
+    // 	reset();
+    // }, false);
+  }
 }
 
-function reset() {
-	seed = (' ' + newSeed).slice(1);//Force deep copy of newSeed
+// function onRecordingEnd() {
+// 	recording = false;
+// 	recorder.stop();
+// 	recorder.save();
+
+// 	onWindowResize();
+// 	const $start = document.getElementById('start');
+// 	$start.style.display = 'inline';
+// 	speedMult = 1;
+// }
+
+
+
+export const reset = async () => {
+	$app.seed = (' ' + newSeed).slice(1);//Force deep copy of newSeed
 	//Remove all
-	scene.traverse(object => {
+	$app.scene.traverse(object => {
 		if (!object.isMesh) return
 		
 		object.geometry.dispose()
@@ -355,8 +622,8 @@ function reset() {
 
 	renderer.renderLists.dispose();
 
-	init();
-	animate();
+	await init();
+	// animate();
 }
 
 const cleanMaterial = material => {
@@ -371,40 +638,41 @@ const cleanMaterial = material => {
 	}
 }
 
-function randomize() {
-	//Randomize palette
-	for(var iter = 0; iter < palette.length; iter++) {
-		var val = palette[iter];
-	    var num = parseInt(Number(val), 10);
-	    num += Math.floor(16777215*rand()%16777215);
-	    var newVal = "0x"+num.toString(16);
-	    palette[iter] = newVal;
-	}
+// function randomize() {
+// 	//Randomize palette
+//   // let { palette, metaly, rough, emissivity, intensityBoost, random, random2, random3, random4, rotationRate, rotationRate2, rotationRate3 } = $app;
+// 	for(var iter = 0; iter < $app.palette.length; iter++) {
+// 		var val = $app.palette[iter];
+// 	    var num = parseInt(Number(val), 10);
+//       console.log(rand())
+// 	    num += Math.floor(16777215*rand()%16777215);
+// 	    var newVal = "0x"+num.toString(16);
+// 	    palette[iter] = newVal;
+// 	}
 
-	//Randomize if shiny or not
-	//0.8 to keep it kinda rare
-	if(rand() > 0.8) {
-		metaly = rand();
-		rough = rand();
-		emissivity = 0.1*rand();
-	  	intensityBoost = 1;
-	} else {
-		metaly = 0; 
-		rough = 1;
-		emissivity = 0;
-	}
+// 	//Randomize if shiny or not
+// 	//0.8 to keep it kinda rare
+// 	if(rand() > 0.8) {
+// 		metaly = rand();
+// 		rough = rand();
+// 		emissivity = 0.1*rand();
+// 	  	intensityBoost = 1;
+// 	} else {
+// 		metaly = 0; 
+// 		rough = 1;
+// 		emissivity = 0;
+// 	}
 
-	random2 = rand() * ( random > 0.5 ? 1 : -1);
-	random3 = rand() * ( random2 > 0.5 ? 1 : -1);
-	random4 = rand() * ( random3 > 0.5 ? 1: -1);
-	rotationRate = (rand() > 0.75 ? 0.005 : 0);
-	rotationRate2 = (rand() > 0.75 & rotationRate > 0 ? 0.005 : 0);
-	rotationRate3 = ((rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0) ? 0.005 : 0);
+// 	random2 = rand() * ( random > 0.5 ? 1 : -1);
+// 	random3 = rand() * ( random2 > 0.5 ? 1 : -1);
+// 	random4 = rand() * ( random3 > 0.5 ? 1: -1);
+// 	rotationRate = (rand() > 0.75 ? 0.005 : 0);
+// 	rotationRate2 = (rand() > 0.75 & rotationRate > 0 ? 0.005 : 0);
+// 	rotationRate3 = ((rand() > 0.75 & rotationRate > 0 & rotationRate2 > 0) ? 0.005 : 0);
   
-}
+// }
 
 
-init();
 
 function fitCameraToSelection( camera, controls, posArray, fitOffset = 1.2 ) {
   
@@ -472,35 +740,41 @@ function getQuadrant(x,y,z,offset) {
 	return -1;
 }
 
-function initLights(scene, camera) {
-	//ILLUMINGATED CAMERA
-	headlight = new PointLight( 0xFBFAF5, intensityBoost, 300);
-	if(HEADLAMP) {
-		camera.add( headlight );
-	}
-	scene.add(camera);
+// function initLights(scene, camera, intensityBoost) {
+// 	let { headlight, HEADLAMP } = $app;
+//   //ILLUMINGATED CAMERA
+// 	headlight = new PointLight( 0xFBFAF5, intensityBoost, 300);
+// 	if(HEADLAMP) {
+// 		camera.add( headlight );
+// 	}
+// 	scene.add(camera);
 
-	const keyLight = new SpotLight( 0xffffff, intensityBoost);
-	keyLight.position.set(55, 99, 88);
-	scene.add( keyLight );
+// 	const keyLight = new SpotLight( 0xffffff, intensityBoost);
+// 	keyLight.position.set(55, 99, 88);
+// 	scene.add( keyLight );
 
-	const fillLight = new SpotLight( 0xffa95c, intensityBoost/2);
-	fillLight.position.set(99, 77, 55);
-	scene.add( fillLight );
+// 	const fillLight = new SpotLight( 0xffa95c, intensityBoost/2);
+// 	fillLight.position.set(99, 77, 55);
+// 	scene.add( fillLight );
 
-	const rimLight = new SpotLight( 0xffffff, intensityBoost);
-	rimLight.position.set(-99, 88, -99);
-	scene.add( rimLight );
-}
+// 	const rimLight = new SpotLight( 0xffffff, intensityBoost);
+// 	rimLight.position.set(-99, 88, -99);
+// 	scene.add( rimLight );
+// }
 
-function onWindowResize() {
+export const onWindowResize = () => {
+  console.log('onWindowResize')
+  const { recording, camera, renderer } = $app;
+  // if (!camera) {
+  //   return;
+  // }
 	if (recording) {
 		return;
 	}
-	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.aspect = innerWidth / innerHeight;
 	camera.updateProjectionMatrix();
 
-	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize( innerWidth, innerHeight );
 
 }
 
@@ -573,92 +847,97 @@ function setupButtons(){
 // }
 
 function resize(width, height){
+  let { camera, renderer } = $app;
 	camera.aspect = width / height;
 	camera.updateProjectionMatrix();
 	renderer.setSize(width, height);
 }
 
 
-function animate() {
-	render();
+// export const animate = () => {
+//   const { recorder, recording, frame , renderer } = $app;
+// 	render();
 
-	recorder.capture(renderer.domElement);
-	if(recording) {
-		frame++;
-		if(frame > fr*actual) {
-			onRecordingEnd();
-		}
-	}
-	requestAnimationFrame( animate );
-}
+// 	recorder.capture(renderer.domElement);
+// 	if(recording) {
+// 		frame++;
+// 		if(frame > fr*actual) {
+// 			onRecordingEnd();
+// 		}
+// 	}
+// 	requestAnimationFrame( animate );
+// }
 
-function render() {
-	const SCALING_FACTOR = 10;
+// export const render = () => {
+// 	const SCALING_FACTOR = 10;
+//   let { mesh, params, camera, controls } = $app;
+//   console.log(mesh, params, camera, controls, 'renderlogs')
+//   console.log()
+//   console.log($app.params)
+// 	if ( mesh ) {
+// 		var reps = 0;
+// 		while(reps < speedMult) { 
 
-	if ( mesh ) {
-		var reps = 0;
-		while(reps < speedMult) { 
+// 			var len = pos.length;
 
-			var len = pos.length;
+// 			if(params.stabilize) {
+// 				offsets.copy(totalAve).divideScalar(len).negate();
+// 				totalAve.set(0,0,0);
+// 			}
 
-			if(params.stabilize) {
-				offsets.copy(totalAve).divideScalar(len).negate();
-				totalAve.set(0,0,0);
-			}
+// 			mesh.rotation.x += rotationRate2*random3;
+// 		  	mesh.rotation.y += rotationRate*random2;
+// 	   		mesh.rotation.z += rotationRate3*random4;
+// 			let i = 0;
 
-			mesh.rotation.x += rotationRate2*random3;
-		  	mesh.rotation.y += rotationRate*random2;
-	   		mesh.rotation.z += rotationRate3*random4;
-			let i = 0;
+// 			while(i < count) {	
 
-			while(i < count) {	
+// 				var position = pos[i];
+// 				var visPosition = visPos[i];
 
-				var position = pos[i];
-				var visPosition = visPos[i];
-
-			    var dx = position.x/SCALING_FACTOR;
-			    var dy = position.y/SCALING_FACTOR;
-			    var dz = position.z/SCALING_FACTOR;
+// 			    var dx = position.x/SCALING_FACTOR;
+// 			    var dy = position.y/SCALING_FACTOR;
+// 			    var dz = position.z/SCALING_FACTOR;
 			      
-			    var x1 = (-b*dx+Math.sin(dy))*random;
-			    var y1 = (-b*dy+Math.sin(dz))*random;
-			    var z1 = (-b*dz+Math.sin(dx))*random;
+// 			    var x1 = (-b*dx+Math.sin(dy))*random;
+// 			    var y1 = (-b*dy+Math.sin(dz))*random;
+// 			    var z1 = (-b*dz+Math.sin(dx))*random;
 
-			    //var randCall = rand();
-			    var xm = rand();
-			    var ym = rand();//randCall*random3;
-			    var zm = rand();//randCall*random4;
+// 			    //var randCall = rand();
+// 			    var xm = rand();
+// 			    var ym = rand();//randCall*random3;
+// 			    var zm = rand();//randCall*random4;
 
-			    position.x += x1 + xm/5;
-			    position.y += y1 + ym/5;
-			    position.z += z1 + zm/5;	
+// 			    position.x += x1 + xm/5;
+// 			    position.y += y1 + ym/5;
+// 			    position.z += z1 + zm/5;	
 	        	
-	        	visPosition.copy(position).add(offsets);
+// 	        	visPosition.copy(position).add(offsets);
 
-			    if(params.stabilize) {
-					dummy.position.set( visPosition.x,  visPosition.y, visPosition.z );
-					totalAve = totalAve.addVectors(totalAve, position);
-			  	} else {
-	       			dummy.position.set( position.x,  position.y, position.z );
-	        	}
+// 			    if(params.stabilize) {
+// 					dummy.position.set( visPosition.x,  visPosition.y, visPosition.z );
+// 					totalAve = totalAve.addVectors(totalAve, position);
+// 			  	} else {
+// 	       			dummy.position.set( position.x,  position.y, position.z );
+// 	        	}
 			    
-				dummy.updateMatrix();
-				mesh.setMatrixAt( i++, dummy.matrix );
-			}
-			reps++;
-    	}
-		mesh.instanceMatrix.needsUpdate = true;
-		mesh.instanceColor.needsUpdate = true;
+// 				dummy.updateMatrix();
+// 				mesh.setMatrixAt( i++, dummy.matrix );
+// 			}
+// 			reps++;
+//     	}
+// 		mesh.instanceMatrix.needsUpdate = true;
+// 		mesh.instanceColor.needsUpdate = true;
 
-	}
-	if(params.lock) {
-		fitCameraToSelection(camera, controls, visPos, 1.3)
-    }
-	renderer.render( scene, camera );
+// 	}
+// 	if(params.lock) {
+// 		fitCameraToSelection(camera, controls, visPos, 1.3)
+//     }
+// 	renderer.render( scene, camera );
 
-}
-
-animate();
+// }
+// animate();
+onMount(async()=>await init())
 
 
 
@@ -738,7 +1017,6 @@ async function mint() {
   }
 export const withdrawFunds = async () => {
   await contract.methods.sendValue(account, $app.web3.utils.toWei("0.15", 'ether'));
-
 }
 </script>
 
@@ -813,7 +1091,7 @@ export const withdrawFunds = async () => {
 
 
 
-<svelte:window on:resize={onWindowResize()}/>
+<svelte:window on:resize={()=>{onWindowResize()}}/>
 <section>
   
   <div class="form">
@@ -908,14 +1186,14 @@ export const withdrawFunds = async () => {
       </div>
     </form>
   </div>
+  <div class="buttons" id="buttons">
+    <!-- <button on:click={withdrawFunds()}>Withdraw funds</button> -->
+    <button id="start" >Start recording to WebM</button>
+    <button id="stop">Stop (or wait 4 seconds)</button>
+  </div>
   <div class="render">
     <h2>Preview</h2>
     <div bind:this={view} />
-      <div class="buttons">
-        <button on:click={withdrawFunds()}>Withdraw funds</button>
-      <button id="start" >Start recording to WebM</button>
-      <button id="stop">Stop (or wait 4 seconds)</button>
-    </div>
   </div>
 
   
