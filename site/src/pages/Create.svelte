@@ -532,7 +532,7 @@ export const start = (e) => {
   //e.preventDefault();
 		resize(sizes,sizes);
 		recorder.start();
-		$start.style.display = 'none';
+		// $start.style.display = 'none';
 		recording = true;
 		speedMult = OVER_POWER;
 }
@@ -644,9 +644,8 @@ export const resize = (width, height) =>{
 
 function animate() {
 	render();
-
-	recorder.capture(renderer.domElement);
-	if(recording) {
+  if (recording) {
+	  recorder.capture(renderer.domElement);
 		frame++;
 		if(frame > fr*actual) {
 			onRecordingEnd();
@@ -732,6 +731,7 @@ function onRecordingEnd() {
   recording = false;
   recorder.stop();
   recorder.save((_blob) => blob = _blob);
+
   const file = new File([blob], "BlobFile", {type: 'video/webm'})
   const formData = new FormData();
   formData.append('webM', blob)
@@ -745,8 +745,10 @@ function onRecordingEnd() {
 
   onWindowResize();
   console.log("saved");
-  const $start = document.getElementById('start');
-  $start.style.display = 'inline';
+  console.log('blah')
+  frame = 0;
+  // const $start = document.getElementById('start');
+  // $start.style.display = 'inline';
   speedMult = 1;
 }
 
@@ -977,7 +979,7 @@ export const withdrawFunds = async () => {
     <h2>Preview</h2>
     <div bind:this={view} />
     <div class="buttons">
-      <button id="start" on:click={start()}>
+      <button id="start" on:click={()=>start()}>
         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
           <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
           <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
