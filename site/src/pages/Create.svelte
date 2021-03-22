@@ -192,7 +192,7 @@ const actual = 5;
 let sizes = 350;
 const recorder = new CCapture({
 	verbose: false,
-	display: true,
+	display: false,
 	framerate: fr,
 	quality: 75,
 	format: 'webm',
@@ -211,7 +211,7 @@ var params = {
 	lock: CAMERA_LOCK 
 }
 const color = new Color();
-
+var attr;
 
 //Declare global vars
 let rand, random, b, dummy, visPos, pos, totalAve, offsets, recording, frame, speedMult, count, amount, newSeed, palette;
@@ -221,7 +221,7 @@ setupButtons();
 
 
 export const init = async () => {
-	// const $attributes = document.getElementById('attributes');
+
 
 	palette = [ 0xEEF50C, 0x3498DB, 0xEAEDED, 0xF2B077, 0xF24405 , 0x68F904, 0xBCC112, 0xA93226];
 	rand = new seedrandom(seed);
@@ -244,7 +244,7 @@ export const init = async () => {
 
 	amount = rand()*20+20;
 	count = Math.pow( amount, 3 );
-
+  
 
 	var props = {
 		metal: (metaly > 0),
@@ -253,7 +253,7 @@ export const init = async () => {
 		zRot: (rotationRate3 > 0)
 	};
 	var rarity = 1/((props.metal ? 0.2 : 0.8) * (props.yRot ? 0.25 : 0.75) * (props.xRot ? 0.25*0.25 : (1-0.25*0.25)) * (props.zRot ? 0.25*0.25*0.25 : (1-0.25*0.25*0.25)));
-	var attr = "Metallic: " + (props.metal ? "True" : "False") + "\n" +
+	attr = "Metallic: " + (props.metal ? "True" : "False") + "\n" +
 			"Has y-rotation: " + (props.yRot ? "True" : "False") + "\n" +
 			"Has x-rotation: " + (props.xRot ? "True" : "False") + "\n" +
 			"Has z-rotation: " + (props.zRot ? "True" : "False") + "\n" +
@@ -344,8 +344,6 @@ export const init = async () => {
 	}
 
 	controls = new OrbitControls(camera, renderer.domElement);
-
-
 }
 
 function reset() {
@@ -423,6 +421,7 @@ function randomize() {
 
 
 init();
+
 
 function fitCameraToSelection( camera, controls, posArray, fitOffset = 1.2 ) {
   
@@ -514,6 +513,8 @@ function initLights(scene, camera) {
 function onWindowResize() {
   // const { camera } = myApp;
   // const { camera , renderer} = myApp;
+  
+  setAttributes();
   const _camera = get(myApp)
   console.log(_camera, camera, renderer, 'onWindowResize')
 	if (recording) {
@@ -524,6 +525,11 @@ function onWindowResize() {
 
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
+}
+
+export const setAttributes = () => {
+  const $attributes = document.getElementById('attributes');
+  $attributes.value = attr;
 }
 
 export const start = (e) => {
@@ -810,7 +816,7 @@ export const withdrawFunds = async () => {
   
 
 <style>
-  section {
+  /* section {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
@@ -875,7 +881,7 @@ export const withdrawFunds = async () => {
     text-align: center;
   }
   canvas { width: 100%; height: 100% }
-#attributes{width: 50%; height:150px}
+#attributes{width: 50%; height:150px} */
 </style>
 
 
@@ -883,129 +889,31 @@ export const withdrawFunds = async () => {
 <svelte:window on:resize={onWindowResize()}/>
 <section>
   
-  <div class="form">
-    <form on:submit|preventDefault>
-     
-      <h2>NFT properties</h2>
-      <label>
-        <strong>Name</strong>
-        <input type="text" bind:value={name} />
-      </label>
-      <label>
-        <strong>Description</strong>
-        <textarea bind:value={description} />
-      </label>
-      <label>
-        <strong>Image</strong>
-        <input type="file" on:change={onFile} />
-        <br /><em>This will be shown on preview and on platform where
-          interactiveNFT are not supported</em>
-      </label>
-      <div>
-        <strong>Attributes</strong>
-        <ul>
-          {#each Object.keys(attributes) as key}
-            <li>
-              <strong>{key}</strong>:
-              {attributes[key]}
-              (<em
-                class="remove"
-                on:click={() => removeAttribute(key)}>remove</em>)
-            </li>
-          {:else}
-            <p>No attributes yet.</p>
-          {/each}
-        </ul>
-        <div>
-          <strong>New attribute</strong>
-          <div class="row">
-            <label> <strong>key</strong> <input bind:value={attrKey} /> </label>
-
-            <label>
-              <strong>value</strong>
-              <input bind:value={attrValue} />
-              <button on:click={addAttribute}>add</button>
-            </label>
-          </div>
-        </div>
-        <h2>InteractiveNFT specific</h2>
-        <div>
-          <strong>Dependencies</strong>
-          <ul>
-            {#each dependencies as dependency}
-              <li>
-                <a href={dependency.url} target="blank">({dependency.type})
-                  {dependency.url}</a>
-                (<em
-                  class="remove"
-                  on:click={() => removeDependency(dependency)}>remove</em>)
-              </li>
-            {:else}
-              <p>
-                No dependency yet.<br />
-                <em>Script and Style that will be loaded before your code.<br />
-                  You can add things like
-                  <a
-                    href="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.min.js"
-                    target="_blank">p5.js</a>
-                  or d3.js or js or ...</em>
-              </p>
-            {/each}
-          </ul>
-          <label>
-            <strong>Dependency</strong>
-            <input bind:value={dependency} />
-            <select bind:value={dependencyType}>
-              <option selected value="script">script</option>
-              <option value="style">style</option>
-            </select>
-            <button on:click={addDependency}>add</button>
-          </label>
-        </div>
-      </div>
-      <label>
-        <strong>Code! (needs to be valid html)</strong><textarea
-          class="code"
-          bind:value={code} /></label>
-
-      <div class="minting">
-        {#if !mintText}
-          <button on:click={mint}>Mint this!</button>
-        {:else}<strong>{mintText}</strong>{/if}
-      </div>
-    </form>
-  </div>
-  <div class="render">
-    <h2>Preview</h2>
-    <div bind:this={view} />
-    <div class="buttons">
-      <button id="start" on:click={()=>start()}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
-          <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-          <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
-        </svg>
-      </button>
-      <button id="headlamp" on:click={()=>headlamp()}>
-      Enable Headlamp
-      </button>
-      <button id="stabilize" on:click={()=>stabilize()}>
-      Disable Stabilization
-      </button>
-      <button id="lock" on:click={()=>lock()}>
-      Enable Camera-Lock
-      </button>
-       <button id="reset" on:click={()=>reset()}>
-      Reset
-      </button>
-      <textarea name="textarea" id="textareaID" placeholder="Enter the text..."></textarea>
-      
-      <textarea readonly id="attributes">
-      Attributes go here
-      </textarea>
-  
-    </div>
+  <div class="buttons">
+    <button id="start" on:click={()=>start()}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
+        <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+      </svg>
+    </button>
+    <button id="headlamp" on:click={()=>headlamp()}>
+    Enable Headlamp
+    </button>
+    <button id="stabilize" on:click={()=>stabilize()}>
+    Disable Stabilization
+    </button>
+    <button id="lock" on:click={()=>lock()}>
+    Enable Camera-Lock
+    </button>
+     <button id="reset" on:click={()=>reset()}>
+    Reset
+    </button>
+    <textarea name="textarea" id="textareaID" placeholder="Enter the text..."></textarea>
     
-  </div>
+    <textarea readonly id="attributes">
+    Attributes go here
+    </textarea>
 
+  </div>
   
 </section>
