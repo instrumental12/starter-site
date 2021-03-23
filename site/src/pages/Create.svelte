@@ -183,7 +183,7 @@ import { get, writable } from 'svelte/store';
   let seed = 'Buck';
 //Stabilization likely should *always* be on
 //TODO: Enable tweening of camera viewpoint
-let camera, scene, renderer, mesh, headlight;
+let camera, scene, renderer, mesh, headlight, stableOld, lockOld;
 
 //Declare constants
 const fr = 30;
@@ -265,7 +265,7 @@ export const init = async () => {
 	// $attributes.value = attr;
  
 
-	camera = new PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+	camera = new PerspectiveCamera( 60, (innerWidth / innerHeight), 0.1, 1000 );
 	camera.position.set( 77, 77, 77 );
 	camera.lookAt( 0, 0, 0 );
   myApp.set({camera: camera})
@@ -325,9 +325,10 @@ export const init = async () => {
     material.dispose();
 
 	if(typeof newSeed === 'undefined') {
+    console.log(window.innerWidth, 'window.innerWidth')
 		renderer = new WebGLRenderer( { antialias: true } );
 		renderer.setPixelRatio( window.devicePixelRatio );
-		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.setSize( 100, 100);
 		renderer.toneMapping = LinearToneMapping;
 	  
     if (document.getElementById('renderer')) {
@@ -520,10 +521,10 @@ function onWindowResize() {
 	if (recording) {
 		return;
 	}
-	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.aspect = (window.innerWidth / window.innerHeight)/2;
 	camera.updateProjectionMatrix();
 
-	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize( window.innerWidth/2, window.innerHeight );
 
 }
 
@@ -912,8 +913,8 @@ body { margin: 0; }
 
 .canvas-container{
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 50%;
+  height: 50%;
 }
 #canvas {
   position: absolute;
