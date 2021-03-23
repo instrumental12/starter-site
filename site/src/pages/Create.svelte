@@ -563,12 +563,12 @@ export const headlamp = e => {
   const $headlamp = document.getElementById('headlamp');
   console.log($headlamp, 'asdf')
   // //e.preventDefault();
-		if(HEADLAMP) {
-			$headlamp.innerHTML = "Enable Headlamp"
+	if(HEADLAMP) {
+			$headlamp.style.fill = "black";
 			HEADLAMP = false;
 			camera.remove(headlight);
 		} else {
-			$headlamp.innerHTML = "Disable Headlamp"
+			$headlamp.style.fill = "red";
 			HEADLAMP = true;
 			camera.add(headlight);
 		}
@@ -578,12 +578,13 @@ export const stabilize = e => {
   const $stabilize = document.getElementById('stabilize');
   	//e.preventDefault();
 		if(params.stabilize) {
-			$stabilize.innerHTML = "Enable Stabilization"
+			$stabilize.style.fill = "black";
 			params.stabilize = false;
 		} else {
-			$stabilize.innerHTML = "Disable Stabilization"
+			$stabilize.style.fill = "red";
 			params.stabilize = true;
 		}
+
 }
 
 export const lock = e => {
@@ -592,18 +593,17 @@ export const lock = e => {
 	const $lock = document.getElementById('lock');
     //e.preventDefault();
 		if(params.lock) {
-			$lock.innerHTML = "Enable Camera-Lock"
+			//$lock.innerHTML = "Enable Camera-Lock"
+			$lock.style.fill = "black";
 			params.lock = false;
 		} else {
-			$lock.innerHTML = "Disable Camera-Lock"
+			$lock.style.fill = "red";
 			params.lock = true;
 		}
 }
 
 export const _reset = e => {
 
-	const $reset = document.getElementById('reset');
-		//e.preventDefault();
 		newSeed = document.getElementById("textareaID").value;
 
 		reset();
@@ -767,12 +767,20 @@ function onRecordingEnd() {
   // } );
 
   onWindowResize();
-  console.log("saved");
-  console.log('blah')
-  frame = 0;
-  // const $start = document.getElementById('start');
-  // $start.style.display = 'inline';
-  speedMult = 1;
+	speedMult = 1;
+	controls.enabled = true;
+	const $start = document.getElementById('start');
+	const $headlamp = document.getElementById('headlamp');
+	const $stabilize = document.getElementById('stabilize');
+	const $lock = document.getElementById('lock');
+	const $reset = document.getElementById('reset');
+	$start.style.display = 'inline';
+	$headlamp.style.display = 'inline';
+	$stabilize.style.display = 'inline';
+	$lock.style.display = 'inline';
+	$reset.style.display = 'inline';
+	params.stabilize = stableOld;
+	params.lock = lockOld;
 }
 
 
