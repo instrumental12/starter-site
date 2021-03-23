@@ -882,6 +882,94 @@ export const withdrawFunds = async () => {
   }
   canvas { width: 100%; height: 100% }
 #attributes{width: 50%; height:150px} */
+body { margin: 0; }
+#attributes{width: 50%; height:150px}
+
+.canvas-container{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+#canvas {
+  position: absolute;
+  background-color: lightgrey;
+}
+#start {
+  
+  position: absolute;
+  left: 5%;
+  bottom: 10%;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+#lock {
+  
+  position: absolute;
+  left: 70%;
+  bottom: 10%;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+#headlamp {
+  position: absolute;
+  left: 5%;
+  bottom: 70%;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+#stabilize {
+  position: absolute;
+  left: 70%;
+  bottom: 70%;
+  border: none;
+  background: none;
+  outline: none;
+  fill: red;
+}
+
+
+svg {
+  width: 100%;
+  height: 48px;
+}
+svg:hover {
+  fill: red;
+  transform: scale(1.1);
+  transition-duration: 0.2s;
+  transition-timing-function: linear;
+}
+.button-container {
+  position:absolute;
+  bottom:0px;
+  left:0px;
+  height:35%;
+  width:25%;
+}
+.button-actual {
+  position:absolute;
+  bottom:0px;
+  left:0px;
+  height:100%;
+  width:100%;
+}
+
+.button-container .button-actual {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 300ms, opacity 300ms;
+}
+.button-container:hover .button-actual {
+  visibility: visible;
+  opacity: 1;
+  transition: visibility 0s linear 0s, opacity 300ms;
+}
+
 </style>
 
 
