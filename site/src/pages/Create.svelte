@@ -535,12 +535,29 @@ export const setAttributes = () => {
 export const start = (e) => {
 
 	const $start = document.getElementById('start');
+
+  const $headlamp = document.getElementById('headlamp');
+
+  const $stabilize = document.getElementById('stabilize');
+  
+  const $lock = document.getElementById('lock');
+  const $reset = document.getElementById('reset');
   //e.preventDefault();
-		resize(sizes,sizes);
-		recorder.start();
-		// $start.style.display = 'none';
-		recording = true;
-		speedMult = OVER_POWER;
+	$start.style.display = 'none';
+  $headlamp.style.display = 'none';
+  $stabilize.style.display = 'none';
+  $lock.style.display = 'none';
+  $reset.style.display = 'none';
+  stableOld = params.stabilize;
+  lockOld = params.lock;
+  params.lock = true;
+  params.stabilize = true;
+  recording = true;
+  speedMult = OVER_POWER;
+  controls.target.set(0,0,0);
+  controls.update();
+  controls.enabled = false;
+  recorder.start();
 }
 export const headlamp = e => {
   const $headlamp = document.getElementById('headlamp');
