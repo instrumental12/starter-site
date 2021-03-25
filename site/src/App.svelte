@@ -11,7 +11,7 @@
   
   
 
-  let mode = 'About';
+  let mode = 'Mint';
 
   const app = writable({});
   export const innerHeight = writable(1000)
@@ -19,6 +19,12 @@
   setContext('app', app);
 
   initProvider(app);
+
+  // export let getAccounts = async () => {
+  //   await $app.provider.send('eth_requestAccounts').then((res)=>{
+  //       console.log(res); 
+  //     $app.accounts = res.result[0]})
+  // }
 </script>
 
 <style>
@@ -51,6 +57,10 @@
     main {
       max-width: none;
     }
+  }
+
+  .bg-light {
+    background-color: #f8f9fa !important
   }
 </style>
 
@@ -86,6 +96,10 @@
           </li>
         </ul>
       </div>
+      <div style="float: right;">
+        <button class="btn btn-light">{$app.account}</button>
+      </div>
+
     </div>
   </nav>
   <!-- <h1></h1>

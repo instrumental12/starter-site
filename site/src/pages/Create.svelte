@@ -9,6 +9,7 @@ import { HemisphereLight, LinearToneMapping, Box3, SpotLight, Scene, Color, Obje
 import seedrandom from 'seedrandom'
 import CCapture from '../components/ccapture.js/src/CCapture.js'
 import { get, writable } from 'svelte/store';
+
 // import { RGBA_ASTC_10x10_Format } from 'three/build/module';
 // import * as CCapture from '../../../node_modules/ccap
   
@@ -71,10 +72,13 @@ import { get, writable } from 'svelte/store';
     console.log(document.getElementById('canvas'))
     const renderer = document.getElementById('canvas')
     document.getElementById('canvas-container').appendChild(renderer);
+	
+	document.getElementById('canvas').setAttribute('style', 'width: 100%; height: 100%;' )
+	onWindowResize();
     // document.body.appendChild()
   })
-  $: console.log(innerHeight, innerWidth, document.getElementById('start'), document)
-  console.log(innerHeight, innerWidth, document.getElementById('start'), document)
+//   $: console.log(innerHeight, innerWidth, document.getElementById('start'), document)
+//   console.log(innerHeight, innerWidth, document.getElementById('start'), document)
   let contract = $app.contract;
   let account = $app.account;
 
@@ -328,12 +332,13 @@ export const init = async () => {
     console.log(window.innerWidth, 'window.innerWidth')
 		renderer = new WebGLRenderer( { antialias: true } );
 		renderer.setPixelRatio( window.devicePixelRatio );
-		renderer.setSize( 100, 100);
+		renderer.setSize( window.innerWidth/2, window.innerHeight/2);
 		renderer.toneMapping = LinearToneMapping;
 	  
-    if (document.getElementById('renderer')) {
+    if (document.getElementById('canvas')) {
       document.getElementById('canvas-container').removeChild(document.getElementById('canvas'));
       document.getElementById('canvas-container').appendChild( renderer.domElement ).setAttribute('id', 'canvas');
+	  document.getElementById('canvas').setAttribute('style', 'width: 100%; height: 100%;' )
     } else {
       document.body.appendChild( renderer.domElement ).setAttribute('id', 'canvas');
     }
@@ -518,13 +523,16 @@ function onWindowResize() {
   setAttributes();
   const _camera = get(myApp)
   console.log(_camera, camera, renderer, 'onWindowResize')
+  
+	console.log(renderer, 'asdfkjl')
 	if (recording) {
 		return;
 	}
-	camera.aspect = (window.innerWidth / window.innerHeight)/2;
+	camera.aspect = (window.innerWidth / window.innerHeight);
 	camera.updateProjectionMatrix();
-
-	renderer.setSize( window.innerWidth/2, window.innerHeight );
+	console.log(window.innerWidth, window.innerHeight)
+	renderer.setSize( window.innerWidth/2, window.innerHeight/2);
+	document.getElementById('canvas').setAttribute('style', 'width: 100%; height: 100%;' )
 
 }
 
@@ -912,9 +920,16 @@ body { margin: 0; }
 #attributes{width: 50%; height:150px}
 
 .canvas-container{
-  position: absolute;
-  width: 50%;
-  height: 50%;
+    position: relative;
+    width: 50%;
+    height: 50%;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    margin: auto;
+    padding: 1rem;
+    border: 2px solid #111;
+    border-radius: 5px;
 }
 #canvas {
   position: absolute;
@@ -996,11 +1011,13 @@ svg:hover {
   transition: visibility 0s linear 0s, opacity 300ms;
 }
 
+
+
 </style>
 
 
 
-<svelte:window on:resize={onWindowResize()}/>
+<svelte:window on:resize={()=>onWindowResize()}/>
 <section>
   <div class="canvas-container" id="canvas-container">
     <!-- <canvas id='canvas' ></canvas> -->
@@ -1130,11 +1147,13 @@ svg:hover {
     <button id="reset" on:click={()=>reset()}>
    Reset
    </button>
-   <textarea name="textarea" id="textareaID" placeholder="Enter the text..."></textarea>
    
-    <textarea readonly id="attributes">
+   
+    <textarea readonly id="attributes" class="">
     Attributes go here
     </textarea>
+
+	<textarea name="textarea" class="" id="textareaID" placeholder="Enter the text..."></textarea>
 
  </div>
     <!-- <textarea name="textarea" id="textareaID" placeholder="Enter the text..."></textarea>
