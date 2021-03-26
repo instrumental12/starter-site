@@ -897,10 +897,10 @@ async function mint() {
     dispatch('minted');
     console.log(pay)
   }
-export const withdrawFunds = async () => {
-  await contract.methods.sendValue(account, $app.web3.utils.toWei("0.15", 'ether'));
+// export const withdrawFunds = async () => {
+//   await contract.methods.sendValue(account, $app.web3.utils.toWei("0.15", 'ether'));
 
-}
+// }
 </script>
 
   
