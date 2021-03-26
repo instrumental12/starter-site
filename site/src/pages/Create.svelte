@@ -814,17 +814,23 @@ animate();
 console.log(document.getElementById('start'))
 
 var webMfile = writable();
-var blob = new Blob();
-function onRecordingEnd() {
+// var blob = new Blob();
+let formData;
+async function onRecordingEnd() {
   console.log('asdf')
   recording = false;
   recorder.stop();
-  recorder.save((_blob) => blob = _blob);
+  var blob = new Blob();
+  await recorder.save(async (_blob) => {
+    console.log(_blob)
+    blob = _blob;
+    console.log(blob, 'in function')
+    mint(new File([blob], "blob.webm"))
+  })
 
-  const file = new File([blob], "BlobFile.webm")
-  const formData = new FormData();
-  formData.append('webM', blob)
-
+  // const file = new File([blob], "BlobFile.webm")
+  // formData = new FormData();
+  // formData.append('blobFile.webM', blob)
   // console.log(formData.entries().next().value)
   // webMfile.update((f)=>formData.entries().next().value[1]);
   
@@ -832,7 +838,6 @@ function onRecordingEnd() {
     //This is where stuff is done with the blob
     //console.log(blob);
   // } );
-  mint(file);
   onWindowResize();
 	speedMult = 1;
 	controls.enabled = true;
@@ -848,6 +853,8 @@ function onRecordingEnd() {
 	$reset.style.display = 'inline';
 	params.stabilize = stableOld;
 	params.lock = lockOld;
+  
+ 
 }
 
 
@@ -862,14 +869,18 @@ async function mint(file) {
 
     mintText = 'Uploading image to ipfs...';
     await ipfs.connect('https://ipfs.infura.io:5001');
-    console.log(image)
-    console.log([blob])
-    const file2 = new File([blob], 'blob.webm', {type: 'video/webm'})
-    console.log(file2)
-    console.log(file2)
+    // console.log(image)
+    // console.log([blob])
+    // const file2 = new File([blob], `video${new Date()}.webm`, {
+    //   type: "video/webm",
+    //   lastModified: new Date(),
+    //   size: 6,
+    // });
+    // console.log(file2)
+    // console.log(file2)
     // file2.size = blob.size
     // console.log(file2)
-    let file_ = await ipfs.add(file2);
+    let file_ = await ipfs.add(file);
     console.log(file_)
     const image_uri = `https://gateway.ipfs.io/ipfs/${file_.path}`;
     data.image = image_uri;
