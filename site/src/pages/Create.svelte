@@ -821,17 +821,18 @@ function onRecordingEnd() {
   recorder.stop();
   recorder.save((_blob) => blob = _blob);
 
-  const file = new File([blob], "BlobFile", {type: 'video/webm'})
+  const file = new File([blob], "BlobFile.webm")
   const formData = new FormData();
   formData.append('webM', blob)
-  console.log(formData.entries().next().value)
-  webMfile.update((f)=>formData.entries().next().value[1]);
+
+  // console.log(formData.entries().next().value)
+  // webMfile.update((f)=>formData.entries().next().value[1]);
   
     //recorder.save( function( blob ) { /* ... */ 
     //This is where stuff is done with the blob
     //console.log(blob);
   // } );
-  mint();
+  mint(file);
   onWindowResize();
 	speedMult = 1;
 	controls.enabled = true;
@@ -850,7 +851,7 @@ function onRecordingEnd() {
 }
 
 
-async function mint() {
+async function mint(file) {
     if (
       !confirm(
         `Are you sure you would like to mint this token?`
@@ -863,7 +864,7 @@ async function mint() {
     await ipfs.connect('https://ipfs.infura.io:5001');
     console.log(image)
     console.log([blob])
-    const file2 = new File([blob], 'blob.webm')
+    const file2 = new File([blob], 'blob.webm', {type: 'video/webm'})
     console.log(file2)
     // file2.size = blob.size
     // console.log(file2)
