@@ -854,6 +854,7 @@ async function onRecordingEnd() {
 	$reset.style.display = 'inline';
 	params.stabilize = stableOld;
 	params.lock = lockOld;
+  $start.textContent = "Mint"
   
  
 }
