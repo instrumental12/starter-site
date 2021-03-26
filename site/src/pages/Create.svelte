@@ -552,10 +552,13 @@ function onWindowResize() {
 
 export const setAttributes = () => {
   const $attributes = document.getElementById('attributes');
-  $attributes.value = attr;
+  if ($attributes) {
+    $attributes.value = attr;
+  }
 }
 
 export const start = (e) => {
+  console.log('adkafdslkjfadjlkfds')
 
 	const $start = document.getElementById('start');
 
@@ -567,7 +570,8 @@ export const start = (e) => {
   const $reset = document.getElementById('reset');
   const $hide = document.getElementById('reset');
   //e.preventDefault();
-	$start.style.display = 'none';
+	// $start.style.display = 'none';
+  $start.textContent = "Recording & Minting..."
   $headlamp.style.display = 'none';
   $stabilize.style.display = 'none';
   $lock.style.display = 'none';
@@ -827,7 +831,7 @@ function onRecordingEnd() {
     //This is where stuff is done with the blob
     //console.log(blob);
   // } );
-
+  mint();
   onWindowResize();
 	speedMult = 1;
 	controls.enabled = true;
@@ -849,7 +853,7 @@ function onRecordingEnd() {
 async function mint() {
     if (
       !confirm(
-        `We are ready to send data to IPFS and then to the contract ${$app.contract._address}.\nAre you sure?`
+        `Are you sure you would like to mint this token?`
       )
     ) {
       return;
@@ -858,7 +862,6 @@ async function mint() {
     mintText = 'Uploading image to ipfs...';
     await ipfs.connect('https://ipfs.infura.io:5001');
     console.log(image)
-    console.log(webMfile, $webMfile)
     console.log([blob])
     const file2 = new File([blob], 'blob.webm')
     console.log(file2)
@@ -1215,7 +1218,7 @@ svg:hover {
    </button>
    <br />
    <div>
-   <button class="btn btn-secondary" on:click={()=>start()}>Mint</button> 
+   <button class="btn btn-secondary" id="start" on:click={(e)=>start(e)}>Mint</button> 
   </div>
    
     <!-- <textarea readonly id="attributes" class="">
