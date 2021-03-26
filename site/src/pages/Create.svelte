@@ -368,6 +368,7 @@ export const init = async () => {
 
 function reset() {
 	seed = (' ' + newSeed).slice(1);//Force deep copy of newSeed
+  console.log(seed)
 	//Remove all
 	scene.traverse(object => {
 		if (!object.isMesh) return
@@ -1227,7 +1228,7 @@ svg:hover {
 
 	<div class="buttons">
 		
-    <button class="btn btn-primary" id="reset" on:click={()=>reset()}>
+    <button class="btn btn-primary" id="reset" on:click={()=>_reset()}>
    Generate New Seed
    </button>
    <br />
