@@ -62,10 +62,11 @@
   .bg-light {
     background-color: #f8f9fa !important
   }
+
 </style>
 
 <header>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">Negative Entropy</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,7 +98,7 @@
         </ul>
       </div>
       <div style="float: right;">
-        <button class="btn btn-light">{$app.account}</button>
+        <button class="btn btn-dark">{$app.account}</button>
       </div>
 
     </div>

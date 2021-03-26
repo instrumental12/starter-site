@@ -93,7 +93,6 @@
     left: 50px;
     bottom: 50px;
     right: 50px;
-    background-color: #fff;
     border: 1px solid black;
     border-radius: 4px;
     display: flex;

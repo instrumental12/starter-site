@@ -936,19 +936,17 @@ body { margin: 0; }
   background-color: lightgrey;
 }
 #start {
-  
-  position: absolute;
-  left: 5%;
-  bottom: 10%;
+  position: relative;
+  /*left: 5%;
+  bottom: 10%;*/
   border: none;
   background: none;
   outline: none;
 }
 
 #lock {
-  
   position: absolute;
-  left: 70%;
+  left: 5%;
   bottom: 10%;
   border: none;
   background: none;
@@ -958,7 +956,7 @@ body { margin: 0; }
 #headlamp {
   position: absolute;
   left: 5%;
-  bottom: 70%;
+  bottom: 50%;
   border: none;
   background: none;
   outline: none;
@@ -966,14 +964,22 @@ body { margin: 0; }
 
 #stabilize {
   position: absolute;
-  left: 70%;
-  bottom: 70%;
+  left: 5%;
+  bottom: 90%;
   border: none;
   background: none;
   outline: none;
   fill: red;
 }
 
+#hide {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  border: none;
+  background: none;
+  outline: none;
+}
 
 svg {
   width: 100%;
@@ -987,10 +993,11 @@ svg:hover {
 }
 .button-container {
   position:absolute;
-  bottom:0px;
-  left:0px;
+  bottom:15%;
+  left:0%;
   height:35%;
   width:25%;
+  margin:0;
 }
 .button-actual {
   position:absolute;
@@ -998,17 +1005,6 @@ svg:hover {
   left:0px;
   height:100%;
   width:100%;
-}
-
-.button-container .button-actual {
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0s linear 300ms, opacity 300ms;
-}
-.button-container:hover .button-actual {
-  visibility: visible;
-  opacity: 1;
-  transition: visibility 0s linear 0s, opacity 300ms;
 }
 
 
@@ -1121,7 +1117,19 @@ svg:hover {
         </div>
     </div>
    
+
+
    </div>  
+   <div class="container">
+
+    <div class="row">
+
+      <div class="col">
+       <textarea class="form-control" name="textarea" id="textareaID" placeholder="Customize your attractor with a name and hit Reset..."></textarea>
+      </div>
+    </div>
+  </div>
+
   <!-- <div class="buttons">
     <button id="start" on:click={()=>start()}>
       <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
@@ -1149,11 +1157,11 @@ svg:hover {
    </button>
    
    
-    <textarea readonly id="attributes" class="">
+    <!-- <textarea readonly id="attributes" class="">
     Attributes go here
-    </textarea>
+    </textarea> -->
 
-	<textarea name="textarea" class="" id="textareaID" placeholder="Enter the text..."></textarea>
+
 
  </div>
     <!-- <textarea name="textarea" id="textareaID" placeholder="Enter the text..."></textarea>
