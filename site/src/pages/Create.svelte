@@ -866,6 +866,7 @@ async function mint(file) {
     console.log([blob])
     const file2 = new File([blob], 'blob.webm', {type: 'video/webm'})
     console.log(file2)
+    console.log(file2)
     // file2.size = blob.size
     // console.log(file2)
     let file_ = await ipfs.add(file2);
@@ -1004,7 +1005,7 @@ body { margin: 0; }
 
 #lock {
   position: absolute;
-  left: 10%;
+  left: 5%;
   bottom: 50%;
   border: none;
   background: none;
@@ -1013,7 +1014,7 @@ body { margin: 0; }
 
 #headlamp {
   position: absolute;
-  left: 10%;
+  left: 5%;
   bottom: 30%;
   border: none;
   background: none;
@@ -1022,7 +1023,7 @@ body { margin: 0; }
 
 #stabilize {
   position: absolute;
-  left: 10%;
+  left: 5%;
   bottom: 70%;
   border: none;
   background: none;
@@ -1032,7 +1033,7 @@ body { margin: 0; }
 
 #hide {
   position: absolute;
-  left: 10%;
+  left: 5%;
   bottom: 10%;
   border: none;
   background: none;
@@ -1062,7 +1063,7 @@ svg:hover {
   bottom:0px;
   left:0px;
   height:200%;
-  width:200%;
+  width:100%;
 }
 
 
@@ -1075,8 +1076,8 @@ svg:hover {
 <section>
   <div class="canvas-container" id="canvas-container">
     <!-- <canvas id='canvas' ></canvas> -->
-    <div class="button-container">
-    <div class="button-actual">
+    <div class="button-container" >
+    <div class="button-actual" id="inner_div">
     
     <!-- <button id="start" on:click={()=>start()}>
         <svg  width="48px" height="36px" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
@@ -1172,11 +1173,12 @@ svg:hover {
           </svg>
           
        </button>
-      <button id="hide" on:click={()=>hide()}>
-        <svg height=48px width=48px xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 16 16"><g ><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288c-.335.48-.83 1.12-1.465 1.755c-.165.165-.337.328-.517.486l.708.709z"/><path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299l.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/><path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884l-12-12l.708-.708l12 12l-.708.708z"/></g></svg>
-      </button>
+      
     
         </div>
+        <button id="hide" on:click={()=>hide()}>
+          <svg height=48px width=48px xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 16 16"><g ><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288c-.335.48-.83 1.12-1.465 1.755c-.165.165-.337.328-.517.486l.708.709z"/><path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299l.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/><path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884l-12-12l.708-.708l12 12l-.708.708z"/></g></svg>
+        </button>
     </div>
    
 
