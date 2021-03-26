@@ -551,12 +551,15 @@ export const start = (e) => {
   
   const $lock = document.getElementById('lock');
   const $reset = document.getElementById('reset');
+  const $hide = document.getElementById('reset');
   //e.preventDefault();
 	$start.style.display = 'none';
   $headlamp.style.display = 'none';
   $stabilize.style.display = 'none';
   $lock.style.display = 'none';
   $reset.style.display = 'none';
+
+  $hide.style.display = 'none';
   stableOld = params.stabilize;
   lockOld = params.lock;
   params.lock = true;
@@ -935,19 +938,20 @@ body { margin: 0; }
   position: absolute;
   background-color: lightgrey;
 }
+/*
 #start {
   position: relative;
-  /*left: 5%;
-  bottom: 10%;*/
+  left: 5%;
+  bottom: 10%;
   border: none;
   background: none;
   outline: none;
-}
+}*/
 
 #lock {
   position: absolute;
-  left: 5%;
-  bottom: 10%;
+  left: 10%;
+  bottom: 50%;
   border: none;
   background: none;
   outline: none;
@@ -955,8 +959,8 @@ body { margin: 0; }
 
 #headlamp {
   position: absolute;
-  left: 5%;
-  bottom: 50%;
+  left: 10%;
+  bottom: 30%;
   border: none;
   background: none;
   outline: none;
@@ -964,8 +968,8 @@ body { margin: 0; }
 
 #stabilize {
   position: absolute;
-  left: 5%;
-  bottom: 90%;
+  left: 10%;
+  bottom: 70%;
   border: none;
   background: none;
   outline: none;
@@ -974,8 +978,8 @@ body { margin: 0; }
 
 #hide {
   position: absolute;
-  left: 0px;
-  bottom: 0px;
+  left: 10%;
+  bottom: 10%;
   border: none;
   background: none;
   outline: none;
@@ -1003,8 +1007,8 @@ svg:hover {
   position:absolute;
   bottom:0px;
   left:0px;
-  height:100%;
-  width:100%;
+  height:200%;
+  width:200%;
 }
 
 
@@ -1020,12 +1024,12 @@ svg:hover {
     <div class="button-container">
     <div class="button-actual">
     
-    <button id="start" on:click={()=>start()}>
-         <svg  width="48px" height="36px" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
-     <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-     <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
-   </svg>
-       </button>
+    <!-- <button id="start" on:click={()=>start()}>
+        <svg  width="48px" height="36px" fill="currentColor" class="bi bi-record-btn" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+          <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+        </svg>
+    </button> -->
        
        <button id="lock" on:click={()=>lock()}>
        <svg width="48px" height="36px" enable-background="new 0 0 52 52" id="Layer_1" version="1.1" viewBox="0 0 52 52" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g><g><path d="M21.9989624,14.0064087V4.0002441h27v-2h-29v12.0045166L14,13.9997559v4.6199951L2,14.6397705V39.40979l12-3.9900513    v4.5800171l6.9971313,0.008667c-0.0490112-0.4731445-0.0772705-0.9525146-0.0772705-1.4388428    c0-3.1660156,1.1289063-6.296875,3.1210938-8.7148438v-3.4072266c0-5.7607422,4.4296875-10.4472656,9.875-10.4472656    s9.875,4.6865234,9.875,10.4472656v3.4072266c1.9970703,2.4179688,3.1289063,5.5498047,3.1289063,8.7148438    c0,0.4933472-0.0298462,0.9793091-0.0802612,1.4590454L50,40.0297852v-26L21.9989624,14.0064087z"/></g><g><path d="M41.7909546,26.4475098c0-4.6582031-3.5322266-8.4472656-7.875-8.4472656    s-7.875,3.7890625-7.875,8.4472656v4.1594238c-1.9874268,2.1243286-3.1209717,4.9937134-3.1209717,7.9628296    c0,6.2999878,4.9299927,11.4299927,11,11.4299927c6.0599976,0,11-5.1300049,11-11.4299927    c0-2.9725952-1.1450806-5.8452759-3.1290283-7.961792V26.4475098z M36.1699829,40.0197754v3.4599609h-4.5v-3.4599609    c-0.789978-0.6700439-1.25-1.6900024-1.25-2.7600098c0-1.9899902,1.5700073-3.6099854,3.5-3.6099854s3.5,1.6199951,3.5,3.6099854    C37.4199829,38.3297729,36.9499512,39.3497314,36.1699829,40.0197754z M39.7909546,28.9006348    c-0.0093994-0.0068359-0.0188599-0.0128784-0.0282593-0.0188599c-0.0009766-0.0006104-0.00177-0.0014038-0.0027466-0.0020142    c-2.3612671-1.553833-5.2926636-2.0270386-8.020813-1.472229c-1.2930298,0.2623901-2.545166,0.7348633-3.6630249,1.4696655    c-0.0117188,0.0078125-0.0234375,0.015625-0.0351563,0.0234375v-2.453125c0-3.5546875,2.6357422-6.4472656,5.875-6.4472656    s5.875,2.8925781,5.875,6.4472656V28.9006348z" fill="#3A92CC"/></g></g></svg>
@@ -1114,9 +1118,9 @@ svg:hover {
           </svg>
           
        </button>
-       <button id="hide">
+      <button id="hide">
         <svg height=48px width=48px xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 16 16"><g ><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288c-.335.48-.83 1.12-1.465 1.755c-.165.165-.337.328-.517.486l.708.709z"/><path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299l.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/><path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884l-12-12l.708-.708l12 12l-.708.708z"/></g></svg>
-        </button>
+      </button>
     
         </div>
     </div>
