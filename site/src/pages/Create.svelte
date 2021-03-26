@@ -1161,7 +1161,7 @@ svg:hover {
 	<div class="buttons">
 		
     <button id="reset" on:click={()=>reset()}>
-   Reset
+   Generate New Seed
    </button>
    
    
