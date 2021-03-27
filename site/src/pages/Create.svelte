@@ -9,6 +9,7 @@ import { HemisphereLight, LinearToneMapping, Box3, SpotLight, Scene, Color, Obje
 import seedrandom from 'seedrandom'
 import CCapture from '../components/ccapture.js/src/CCapture.js'
 import { get, writable } from 'svelte/store';
+import code from '../components/code'
 
 // import { RGBA_ASTC_10x10_Format } from 'three/build/module';
 // import * as CCapture from '../../../node_modules/ccap
@@ -828,7 +829,8 @@ async function onRecordingEnd() {
     console.log(blob, 'in function')
     mint(new File([blob], "blob.webm"))
   })
-
+  code.seed = 'Buck'
+  console.log(code.seed)
   // const file = new File([blob], "BlobFile.webm")
   // formData = new FormData();
   // formData.append('blobFile.webM', blob)
