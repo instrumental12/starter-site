@@ -579,8 +579,8 @@ const $start = document.getElementById('start');
   $stabilize.style.display = 'none';
   $lock.style.display = 'none';
   $reset.style.display = 'none';
-
   $hide.style.display = 'none';
+  opct = 0;
   stableOld = params.stabilize;
   lockOld = params.lock;
   params.lock = true;
@@ -859,6 +859,7 @@ async function onRecordingEnd() {
 	$reset.style.display = 'inline';
 	params.stabilize = stableOld;
 	params.lock = lockOld;
+	opct = 1;
   $start.textContent = "Mint"
   
  
