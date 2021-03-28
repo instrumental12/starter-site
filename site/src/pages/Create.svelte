@@ -821,7 +821,7 @@ var webMfile = writable();
 // var blob = new Blob();
 let formData;
 async function onRecordingEnd() {
-  console.log('asdf')
+  console.log(seed)
   recording = false;
   recorder.stop();
   var blob = new Blob();
@@ -829,7 +829,7 @@ async function onRecordingEnd() {
     console.log(_blob)
     blob = _blob;
     console.log(blob, 'in function')
-    const _code = ViewerScript('asdf');
+    const _code = ViewerScript('"'+seed+'"'); //TODO: Replace this with window.properties.seed or something along those lines
     console.log(_code)
     mint(new File([blob], "blob.webm"), _code)
   })
