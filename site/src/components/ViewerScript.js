@@ -1,37 +1,11 @@
 
-export default {seed: '', code = `
+export const ViewerScript = (seed) => {
+    return `
 
 <script src="https://threejs.org/build/three.js"></script>
 <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js">
 </script>
-
-<body>
-
-	<div class="buttons">
-		
-    <button id="headlamp">
-    Enable Headlamp
-    </button>
-    <button id="stabilize">
-    Disable Stabilization
-    </button>
-    <button id="lock">
-    Enable Camera-Lock
-    </button>
-     <button id="reset">
-    Reset
-    </button>
-    
-<textarea readonly id="attributes">
-Attributes go here
-</textarea>
-
-	</div>
-  
-  
-
-</body>
 <script>
 
 let seed = ${seed};
@@ -491,4 +465,33 @@ body { margin: 0; }
 canvas { width: 100%; height: 100% }
 #attributes{width: 50%; height:150px}
 </style>
+<html>
+<body>
+
+	<div class="buttons">
+		
+    <button id="headlamp">
+    Enable Headlamp
+    </button>
+    <button id="stabilize">
+    Disable Stabilization
+    </button>
+    <button id="lock">
+    Enable Camera-Lock
+    </button>
+     <button id="reset">
+    Reset
+    </button>
+    
+<textarea readonly id="attributes">
+Attributes go here
+</textarea>
+
+	</div>
+  
+  
+
+</body>
+</html>
 `
+}

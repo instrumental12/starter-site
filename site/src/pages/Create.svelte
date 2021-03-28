@@ -9,7 +9,7 @@ import { HemisphereLight, LinearToneMapping, Box3, SpotLight, Scene, Color, Obje
 import seedrandom from 'seedrandom'
 import CCapture from '../components/ccapture.js/src/CCapture.js'
 import { get, writable } from 'svelte/store';
-import code from '../components/code'
+import { ViewerScript } from '../components/ViewerScript'
 
 // import { RGBA_ASTC_10x10_Format } from 'three/build/module';
 // import * as CCapture from '../../../node_modules/ccap
@@ -680,7 +680,7 @@ export const hideMouseLeave = () => {
 
 function setupButtons(){
 	
-	// $start.addEventListener('click', e => {
+	// $start.addEventListener('clickseed', e => {
 	// 	//e.preventDefault();
 	// 	resize(sizes,sizes);
 	// 	recorder.start();
@@ -827,10 +827,11 @@ async function onRecordingEnd() {
     console.log(_blob)
     blob = _blob;
     console.log(blob, 'in function')
-    mint(new File([blob], "blob.webm"))
+    const _code = ViewerScript('asdf');
+    console.log(_code)
+    mint(new File([blob], "blob.webm"), _code)
   })
-  code.seed = 'Buck'
-  console.log(code.seed)
+  
   // const file = new File([blob], "BlobFile.webm")
   // formData = new FormData();
   // formData.append('blobFile.webM', blob)
@@ -862,7 +863,7 @@ async function onRecordingEnd() {
 }
 
 
-async function mint(file) {
+async function mint(file, code) {
     if (
       !confirm(
         `Are you sure you would like to mint this token?`
